@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# FOAD Dev Setup launcher for macOS.
+# This file is packaged into the DMG and runs install-mac.sh as the logged-in user.
+
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+clear
+printf '\nFOAD Dev Setup for macOS\n'
+printf 'This will install Homebrew if needed, Git, Node.js/npm, Google Antigravity IDE, Claude Code, and starter files.\n\n'
+printf 'Press Enter to start, or close this window to cancel.\n'
+read -r _
+
+/bin/bash "$SCRIPT_DIR/install-mac.sh"
+
+printf '\nSetup finished. You can close this window.\n'
+read -r -p "Press Enter to close..." _

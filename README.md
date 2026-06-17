@@ -15,6 +15,15 @@ Installs:
 >
 > Security note: these one-liners download and execute installer scripts. Keep them on HTTPS, only use a domain you control, and show the script contents on the page for transparency.
 
+## Professional installer option
+
+For a more professional download page, this repo also includes packaging templates:
+
+- Windows: build `FOAD-Dev-Setup-Windows.exe` with Inno Setup.
+- macOS: build `FOAD-Dev-Setup-macOS.dmg` with a double-click setup command.
+
+See [`packaging/README.md`](packaging/README.md).
+
 ---
 
 ## Put this on your website

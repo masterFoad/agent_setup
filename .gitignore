@@ -12,3 +12,6 @@ Thumbs.db
 *.log
 tmp/
 temp/
+
+# Build outputs
+dist/
