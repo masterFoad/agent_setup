@@ -62,7 +62,13 @@ function Install-WingetPackage([string]$Id, [string]$Name, [switch]$Required) {
         return $true
     }
 
+    Write-Host "Downloading and installing $Name. This can take several minutes." -ForegroundColor Cyan
+    Write-Host "A big app may sit with no percentage while it downloads - that is normal, please wait and do NOT close this window." -ForegroundColor Cyan
+    Write-Host "If a 'Do you want to allow this app to make changes?' (UAC) prompt appears, click Yes. Check the taskbar if you do not see it." -ForegroundColor Yellow
     try {
+        # --silent installs unattended (no clicking). winget still prints its own
+        # download progress to this console. Removing --silent would show each
+        # app's installer UI but require the student to click through it.
         winget install --id $Id --exact --silent --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -eq 0) {
             Ok "$Name installed."
@@ -337,6 +343,10 @@ Install-WingetPackage -Id "Git.Git" -Name "Git" -Required | Out-Null
 Install-WingetPackage -Id "OpenJS.NodeJS.LTS" -Name "Node.js LTS + npm" -Required | Out-Null
 Refresh-PathForCurrentSession
 
+Write-Host ""
+Write-Host "NOTE: Google Antigravity IDE is a full IDE and by far the largest download here." -ForegroundColor Cyan
+Write-Host "It can take 10+ minutes on a slow connection and may show NO progress while downloading." -ForegroundColor Cyan
+Write-Host "This is expected. Only treat it as stuck if there is no disk/network activity for a long time." -ForegroundColor Cyan
 Install-FirstAvailableWingetPackage -Ids @("Google.AntigravityIDE") -Name "Google Antigravity IDE" | Out-Null
 Install-ClaudeCodeNative | Out-Null
 Write-ClaudeStarterFiles
