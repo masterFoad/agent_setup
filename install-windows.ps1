@@ -90,6 +90,10 @@ function Install-FirstAvailableWingetPackage([string[]]$Ids, [string]$Name) {
 
 function Install-ClaudeCodeNative {
     Step "Installing Claude Code"
+    # URL verified against https://code.claude.com/docs/en/setup (official native installer).
+    # This does NOT require Administrator. Alternative official path that would be more
+    # consistent with the rest of this script: winget install Anthropic.ClaudeCode
+    # (WinGet installs do not auto-update; the native installer below does.)
     try {
         Invoke-RestMethod -Uri "https://claude.ai/install.ps1" -UseBasicParsing | Invoke-Expression
         Refresh-PathForCurrentSession
@@ -248,7 +252,10 @@ function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version
 
 Step "FOAD Dev Setup for Windows"
 Write-Host "This installs Git, Node.js/npm, Antigravity IDE, Claude Code, and FOAD starter Claude files."
-Write-Host "If Windows asks for permission, approve it. If installs fail, reopen PowerShell as Administrator and run again."
+Write-Host "Windows may pop up a 'Do you want to allow this app to make changes?' (UAC) dialog while" -ForegroundColor Yellow
+Write-Host "installing Git and Node.js. Click YES each time." -ForegroundColor Yellow
+Write-Host "If a tool fails with an 'access denied' / permission error, close PowerShell, reopen it with" -ForegroundColor Yellow
+Write-Host "'Run as Administrator', and paste the command again. It is safe to re-run." -ForegroundColor Yellow
 
 Step "Checking WinGet"
 if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {

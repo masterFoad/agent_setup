@@ -46,7 +46,16 @@ Tell students to open **PowerShell** and paste:
 powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-windows.ps1 | iex"
 ```
 
-If it fails because of permissions, tell them to reopen PowerShell with **Run as Administrator** and paste it again.
+While it installs Git and Node.js, Windows may show a **User Account Control (UAC)** dialog asking *"Do you want to allow this app to make changes?"* — click **Yes**. If a tool fails with an "access denied" or permission error, tell students to reopen PowerShell with **Run as Administrator** and paste the command again. (The Claude Code install itself does not need Administrator.)
+
+#### If you hand out the `.exe` instead
+
+When students download `FOAD-Dev-Setup-Windows.exe` from a website, Microsoft Defender **SmartScreen** shows a blue *"Windows protected your PC"* box, because the EXE is not signed with a code-signing certificate. Tell students:
+
+1. Click **More info**.
+2. Click **Run anyway**.
+
+This is expected for an unsigned installer and does not mean anything is wrong. To remove the warning entirely, sign the EXE with an Authenticode certificate (see [`packaging/README.md`](packaging/README.md)). For students, the one-line PowerShell command above does not trigger SmartScreen and is the recommended path.
 
 ### macOS
 
