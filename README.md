@@ -15,6 +15,14 @@ Installs:
 >
 > Security note: these one-liners download and execute installer scripts. Keep them on HTTPS, only use a domain you control, and show the script contents on the page for transparency.
 
+## Download the macOS installer (.dmg)
+
+Latest build, attached to the GitHub Release:
+
+- **[FOAD-Dev-Setup-macOS.dmg](https://github.com/masterFoad/agent_setup/releases/latest/download/FOAD-Dev-Setup-macOS.dmg)**
+
+Open the DMG, then double-click **FOAD Dev Setup**. It is **not** signed/notarized yet, so macOS will warn the first time — see [If you hand out the `.dmg` instead](#if-you-hand-out-the-dmg-instead) for the one-time right-click → Open step.
+
 ## Professional installer option
 
 For a more professional download page, this repo also includes packaging templates:
@@ -49,6 +57,15 @@ Tell students to open **Terminal** and paste:
 ```
 
 macOS may ask for the user password while installing Homebrew. That is normal.
+
+#### If you hand out the `.dmg` instead
+
+When students download `FOAD-Dev-Setup-macOS.dmg` from a website, macOS quarantines it. Unless the DMG is signed **and** notarized with an Apple Developer ID, double-clicking `FOAD Dev Setup.command` shows a warning like *"Apple could not verify this app is free of malware."* Tell students:
+
+1. **Right-click** (or Control-click) `FOAD Dev Setup.command` → **Open** → **Open** again.
+2. If macOS still refuses, go to  **Apple menu → System Settings → Privacy & Security**, scroll down, and click **Open Anyway**, then reopen the file.
+
+This warning is expected for an unsigned installer and does not mean anything is wrong. To remove it entirely, sign and notarize the DMG (see [`packaging/README.md`](packaging/README.md)). For students, the one-line Terminal command above avoids Gatekeeper completely and is the recommended path.
 
 ---
 

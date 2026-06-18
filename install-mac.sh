@@ -240,7 +240,12 @@ echo "Homebrew may ask for your Mac password. That is normal."
 step "Checking Homebrew"
 if ! command -v brew >/dev/null 2>&1; then
   echo "Homebrew not found. Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+  echo "macOS will ask for your password. Type your Mac login password and press Return."
+  echo "The screen will NOT show characters as you type the password. That is normal."
+  # NONINTERACTIVE=1 skips Homebrew's "Press RETURN to continue" confirmation so
+  # beginners do not think the installer has frozen. The sudo password prompt
+  # still appears (and must) because Homebrew needs it to create its directories.
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
     warn "Homebrew install failed. Install Homebrew manually from https://brew.sh and rerun this script."
     exit 1
   }
@@ -259,6 +264,8 @@ brew update || warn "brew update failed; continuing with existing package index.
 
 install_brew_formula "git" "Git" || true
 install_brew_formula "node" "Node.js + npm" || true
+# Cask "antigravity-ide" verified to exist in homebrew-cask (Google Antigravity IDE).
+# Note: a separate "antigravity" cask (Agent orchestration platform) also exists; not the IDE.
 install_first_available_cask "Google Antigravity IDE" "antigravity-ide" || true
 install_claude_code || true
 write_claude_starter_files

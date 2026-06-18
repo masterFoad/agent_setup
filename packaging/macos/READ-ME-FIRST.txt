@@ -1,0 +1,26 @@
+FOAD Dev Setup — read this first
+================================
+
+1. Double-click  "FOAD Dev Setup"  in this window to start.
+
+2. If macOS says it "could not verify" the file or that it is from an
+   unidentified developer:
+
+     - Right-click (or Control-click) "FOAD Dev Setup"
+     - Choose  Open
+     - Click  Open  again in the dialog
+
+   Still blocked? Open the Apple menu -> System Settings ->
+   Privacy & Security, scroll down, click "Open Anyway", then
+   double-click "FOAD Dev Setup" again.
+
+   This warning is normal for a free installer that is not signed with a
+   paid Apple Developer account. It does not mean anything is wrong.
+
+3. macOS may ask for your Mac password while Homebrew installs. That is
+   expected — type your login password and press Return.
+
+4. When it finishes, close and reopen Terminal, then run:  claude
+
+The other files (install-mac.sh, README.md) are for reference and for
+advanced users. You only need to double-click "FOAD Dev Setup".
