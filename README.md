@@ -137,6 +137,7 @@ If one command is missing, close and reopen the terminal, then rerun the setup c
 ## Notes for FOAD
 
 - Windows uses WinGet for Git, Node.js LTS, and Google Antigravity IDE.
+- If WinGet (App Installer) is missing, the Windows script tries to install it automatically from the official `microsoft/winget-cli` GitHub release, and falls back to the Microsoft Store. After a fresh WinGet install, students may need to reopen PowerShell once and rerun the command. (This auto-bootstrap path is untested on real Windows — smoke-test it before relying on it.)
 - macOS uses Homebrew for Git, Node.js, and Google Antigravity IDE.
 - The starter Claude files are only created if missing, so reruns do not overwrite student edits.
 - Claude Code uses Anthropic's native installer first, then falls back to npm if needed.

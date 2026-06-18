@@ -39,7 +39,8 @@ function Refresh-PathForCurrentSession {
         (Join-Path $HOME ".claude\bin"),
         (Join-Path $HOME ".claude\local"),
         (Join-Path $HOME "AppData\Roaming\npm"),
-        (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Packages")
+        (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Packages"),
+        (Join-Path $HOME "AppData\Local\Microsoft\WindowsApps")
     ) -join ";"
     $env:Path = "$machinePath;$userPath;$extra;$env:Path"
 }
@@ -250,6 +251,77 @@ function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version
     }
 }
 
+function Ensure-Winget {
+    # Returns $true if winget is usable in THIS session. If winget is missing,
+    # tries to install App Installer (Microsoft.DesktopAppInstaller) from the
+    # official microsoft/winget-cli GitHub release, then falls back to the
+    # Microsoft Store. UNTESTED on real Windows from this repo's CI — smoke-test
+    # on a Windows box before relying on the auto-bootstrap path.
+    Step "Checking WinGet"
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Ok "WinGet found."
+        return $true
+    }
+
+    Warn "WinGet is not installed. Trying to install 'App Installer' automatically..."
+    Warn "If this fails, the Microsoft Store will open as a fallback."
+
+    try {
+        switch ($env:PROCESSOR_ARCHITECTURE) {
+            "AMD64" { $depArch = "x64" }
+            "ARM64" { $depArch = "arm64" }
+            "x86"   { $depArch = "x86" }
+            default { $depArch = "x64" }
+        }
+
+        $tmp = Join-Path $env:TEMP "foad-winget"
+        New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+
+        $release = Invoke-RestMethod -UseBasicParsing `
+            -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" `
+            -Headers @{ "User-Agent" = "foad-dev-setup" }
+
+        $bundle = $release.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -First 1
+        $deps   = $release.assets | Where-Object { $_.name -like "*Dependencies.zip" } | Select-Object -First 1
+        if (-not $bundle) { throw "Could not find the App Installer .msixbundle in the latest release." }
+
+        # Install dependencies (VCLibs + UI.Xaml) for this architecture first, if shipped.
+        if ($deps) {
+            $depsZip = Join-Path $tmp $deps.name
+            Invoke-WebRequest -UseBasicParsing -Uri $deps.browser_download_url -OutFile $depsZip
+            $depsDir = Join-Path $tmp "deps"
+            Expand-Archive -Path $depsZip -DestinationPath $depsDir -Force
+            $archDir = Join-Path $depsDir $depArch
+            if (Test-Path $archDir) {
+                Get-ChildItem -Path $archDir -Filter *.appx -ErrorAction SilentlyContinue | ForEach-Object {
+                    try { Add-AppxPackage -Path $_.FullName -ErrorAction Stop }
+                    catch { Warn "Dependency $($_.Name) may already be present: $($_.Exception.Message)" }
+                }
+            }
+        }
+
+        $bundlePath = Join-Path $tmp $bundle.name
+        Invoke-WebRequest -UseBasicParsing -Uri $bundle.browser_download_url -OutFile $bundlePath
+        Add-AppxPackage -Path $bundlePath -ErrorAction Stop
+
+        Refresh-PathForCurrentSession
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            Ok "WinGet installed automatically."
+            return $true
+        }
+
+        # Installed, but the app-execution alias is not live in this session yet.
+        Warn "App Installer was installed, but 'winget' is not active in this PowerShell session yet."
+        Warn "Close PowerShell, open it again, and paste the setup command once more. It is safe to re-run."
+        return $false
+    } catch {
+        Warn "Automatic WinGet install failed: $($_.Exception.Message)"
+        FailMsg "Install 'App Installer' from the Microsoft Store (opening now), then run this script again."
+        Start-Process "ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1" | Out-Null
+        return $false
+    }
+}
+
 Step "FOAD Dev Setup for Windows"
 Write-Host "This installs Git, Node.js/npm, Antigravity IDE, Claude Code, and FOAD starter Claude files."
 Write-Host "Windows may pop up a 'Do you want to allow this app to make changes?' (UAC) dialog while" -ForegroundColor Yellow
@@ -257,13 +329,7 @@ Write-Host "installing Git and Node.js. Click YES each time." -ForegroundColor Y
 Write-Host "If a tool fails with an 'access denied' / permission error, close PowerShell, reopen it with" -ForegroundColor Yellow
 Write-Host "'Run as Administrator', and paste the command again. It is safe to re-run." -ForegroundColor Yellow
 
-Step "Checking WinGet"
-if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    FailMsg "WinGet is missing. Install 'App Installer' from the Microsoft Store, then run this script again."
-    Start-Process "ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1" | Out-Null
-    exit 1
-}
-Ok "WinGet found."
+if (-not (Ensure-Winget)) { exit 1 }
 
 try { winget source update | Out-Null } catch { Warn "winget source update failed, continuing anyway." }
 
