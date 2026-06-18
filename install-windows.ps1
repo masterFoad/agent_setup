@@ -224,6 +224,14 @@ claude                  Start Claude Code
 ANTIGRAVITY IDE
 Open Google Antigravity IDE from the Start Menu.
 
+IMPORTANT - terminal inside Antigravity:
+Claude Code was installed for normal Windows, so it runs in PowerShell.
+In Antigravity, open a terminal and pick the "PowerShell" profile (NOT "WSL"
+or "Ubuntu"). If the terminal opens WSL/Linux, "claude" will say "command not
+found" and Windows may ask to install WSL - that is the wrong shell.
+To switch: click the small dropdown arrow next to the + in the terminal panel
+and choose PowerShell (or Command Prompt / Git Bash). Then run:  claude
+
 FIRST TEST PROJECT
 mkdir foad-test
 cd foad-test
@@ -244,12 +252,19 @@ function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version
     }
 
     try {
-        $result = & $cmd.Source $VersionArg 2>&1 | Select-Object -First 1
-        if ($LASTEXITCODE -eq 0) {
+        # Capture ALL output first, then take the first line. Piping a native
+        # command directly into 'Select-Object -First 1' stops it early, which
+        # kills the process and makes $LASTEXITCODE come back as -1 on success
+        # (it prints the right version but falsely warns). Capture, record the
+        # exit code immediately, then trim.
+        $output = & $cmd.Source $VersionArg 2>&1
+        $code = $LASTEXITCODE
+        $result = ($output | Select-Object -First 1)
+        if ($code -eq 0 -or $result -match '\d+\.\d+') {
             Ok "$Command works: $result"
             return $true
         }
-        Warn "$Command exists but version check returned exit code $LASTEXITCODE`: $result"
+        Warn "$Command exists but version check returned exit code $code`: $result"
         return $false
     } catch {
         Warn "$Command exists but version check failed. Restart PowerShell and try: $Command $VersionArg"

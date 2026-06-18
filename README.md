@@ -134,6 +134,14 @@ If one command is missing, close and reopen the terminal, then rerun the setup c
 
 ---
 
+## Troubleshooting (Windows)
+
+- **`claude` says "command not found" inside the Antigravity terminal, and Windows asks to install WSL.** The Antigravity terminal opened a **WSL/Linux** shell. Claude Code was installed for native Windows, so it runs in **PowerShell**, not WSL. In Antigravity's terminal panel, click the dropdown arrow next to the `+` and choose **PowerShell** (or Command Prompt / Git Bash), then run `claude`. Do not install WSL for this.
+- **Install looks frozen, especially on "Installing Google Antigravity IDE".** It is downloading a large app silently. winget often shows no percentage; wait several minutes. It is only truly stuck if there is no network/disk activity for a long time.
+- **Verification step prints `[WARN] ... exit code -1` but shows a correct version.** This was a cosmetic bug (the version check stopped the command early). Fixed — the tools were working fine. Re-pull `main` / rebuild the `.exe` to get the fix.
+
+---
+
 ## Notes for FOAD
 
 - Windows uses WinGet for Git, Node.js LTS, and Google Antigravity IDE.
