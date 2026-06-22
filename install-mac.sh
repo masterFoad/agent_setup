@@ -200,6 +200,11 @@ NODE BASICS
 npm install             Install project packages
 npm run dev             Start many web projects
 
+PYTHON BASICS
+python3 --version       Check Python is installed
+pip3 install requests   Install a Python package
+python3 script.py       Run a Python script
+
 CLAUDE CODE
 claude                  Start Claude Code
 /login                  Login or register when inside Claude Code
@@ -264,6 +269,8 @@ brew update || warn "brew update failed; continuing with existing package index.
 
 install_brew_formula "git" "Git" || true
 install_brew_formula "node" "Node.js + npm" || true
+# Python 3 (+ pip): agents and Claude Code frequently shell out to it for scripts.
+install_brew_formula "python" "Python 3 + pip" || true
 # Cask "antigravity-ide" verified to exist in homebrew-cask (Google Antigravity IDE).
 # Note: a separate "antigravity" cask (Agent orchestration platform) also exists; not the IDE.
 install_first_available_cask "Google Antigravity IDE" "antigravity-ide" || true
@@ -275,6 +282,8 @@ step "Verifying installs"
 check_command_version git
 check_command_version node
 check_command_version npm
+check_command_version python3
+check_command_version pip3
 check_command_version claude
 
 step "Next steps"

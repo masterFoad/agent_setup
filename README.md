@@ -6,6 +6,7 @@ Installs:
 
 - Git
 - Node.js + npm
+- Python 3 + pip
 - Google Antigravity IDE
 - Claude Code
 - FOAD starter Claude Code skill/command

@@ -34,14 +34,26 @@ function Write-TextFileIfMissing([string]$Path, [string]$Content) {
 function Refresh-PathForCurrentSession {
     $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
     $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    $extra = @(
+    $extraDirs = @(
         (Join-Path $HOME ".local\bin"),
         (Join-Path $HOME ".claude\bin"),
         (Join-Path $HOME ".claude\local"),
         (Join-Path $HOME "AppData\Roaming\npm"),
         (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Packages"),
         (Join-Path $HOME "AppData\Local\Microsoft\WindowsApps")
-    ) -join ";"
+    )
+
+    # winget's Python often does not add itself to PATH; find per-user installs
+    # (e.g. ...\Programs\Python\Python313 and its Scripts dir) and include them.
+    $pyRoot = Join-Path $HOME "AppData\Local\Programs\Python"
+    if (Test-Path $pyRoot) {
+        Get-ChildItem -Path $pyRoot -Directory -Filter "Python3*" -ErrorAction SilentlyContinue | ForEach-Object {
+            $extraDirs += $_.FullName
+            $extraDirs += (Join-Path $_.FullName "Scripts")
+        }
+    }
+
+    $extra = ($extraDirs -join ";")
     $env:Path = "$machinePath;$userPath;$extra;$env:Path"
 }
 
@@ -84,14 +96,18 @@ function Install-WingetPackage([string]$Id, [string]$Name, [switch]$Required) {
     }
 }
 
-function Install-FirstAvailableWingetPackage([string[]]$Ids, [string]$Name) {
+function Install-FirstAvailableWingetPackage([string[]]$Ids, [string]$Name, [string]$FallbackUrl) {
     foreach ($id in $Ids) {
         if (Install-WingetPackage -Id $id -Name "$Name ($id)" ) {
             return $true
         }
     }
-    Warn "$Name was not installed from winget. Opening the official download page as a fallback."
-    Start-Process "https://antigravity.google/download" | Out-Null
+    if ($FallbackUrl) {
+        Warn "$Name was not installed from winget. Opening the official download page as a fallback."
+        Start-Process $FallbackUrl | Out-Null
+    } else {
+        Warn "$Name was not installed from winget."
+    }
     return $false
 }
 
@@ -213,6 +229,13 @@ git commit -m "message" Save a commit
 NODE BASICS
 npm install             Install project packages
 npm run dev             Start many web projects
+
+PYTHON BASICS
+python --version        Check Python is installed (or: py --version)
+pip install requests    Install a Python package
+python script.py        Run a Python script
+If "python" opens the Microsoft Store, close PowerShell and reopen it, or use
+the "py" command instead.
 
 CLAUDE CODE
 claude                  Start Claude Code
@@ -362,7 +385,13 @@ Write-Host ""
 Write-Host "NOTE: Google Antigravity IDE is a full IDE and by far the largest download here." -ForegroundColor Cyan
 Write-Host "It can take 10+ minutes on a slow connection and may show NO progress while downloading." -ForegroundColor Cyan
 Write-Host "This is expected. Only treat it as stuck if there is no disk/network activity for a long time." -ForegroundColor Cyan
-Install-FirstAvailableWingetPackage -Ids @("Google.AntigravityIDE") -Name "Google Antigravity IDE" | Out-Null
+Install-FirstAvailableWingetPackage -Ids @("Google.AntigravityIDE") -Name "Google Antigravity IDE" -FallbackUrl "https://antigravity.google/download" | Out-Null
+
+# Python 3 (+ pip): agents and Claude Code frequently shell out to it for scripts.
+# Pin to current minor versions, newest first; winget IDs are version-specific.
+Install-FirstAvailableWingetPackage -Ids @("Python.Python.3.13", "Python.Python.3.14", "Python.Python.3.12") -Name "Python 3 + pip" -FallbackUrl "https://www.python.org/downloads/windows/" | Out-Null
+Refresh-PathForCurrentSession
+
 Install-ClaudeCodeNative | Out-Null
 Write-ClaudeStarterFiles
 Write-TerminalGuide
@@ -371,6 +400,8 @@ Step "Verifying installs"
 Check-CommandVersion "git" | Out-Null
 Check-CommandVersion "node" | Out-Null
 Check-CommandVersion "npm" | Out-Null
+Check-CommandVersion "python" | Out-Null
+Check-CommandVersion "pip" | Out-Null
 Check-CommandVersion "claude" | Out-Null
 
 Step "Next steps"
