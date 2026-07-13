@@ -1,135 +1,336 @@
 #!/usr/bin/env bash
 # FOAD Dev Setup - macOS
-# Installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE, Claude Code,
-# and beginner Claude Code skill files. Safe to re-run.
+# Version 2.0.0
+#
+# Installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,
+# Claude Code, and beginner starter files. Safe to re-run.
+#
 # Website command:
 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-mac.sh)"
 #
 # WORKSHOP INSTRUCTOR NOTES:
-# - Ask attendees to run this BEFORE the workshop if possible (downloads are ~1 GB total;
-#   30 people on venue Wi-Fi at once will be slow).
-# - Attendees need: macOS 12+, their Mac login password (admin), and a Google account
-#   for Antigravity. Claude Code needs a paid Claude plan (Pro+) or API account.
-# - On a fresh Mac, Homebrew first installs Apple's Command Line Tools (5-15 min,
-#   looks frozen — it is not). The script warns attendees about this.
-# - Written for macOS's built-in /bin/bash 3.2 — do not add bash 4+ features.
+# - Ask attendees to run this before the workshop if possible. Downloads are large,
+#   and a room full of people installing at once can overwhelm venue Wi-Fi.
+# - Attendees need macOS 13+, an Administrator account, their Mac login password,
+#   and a Google account for Antigravity IDE.
+# - Homebrew officially supports macOS 14+. macOS 13 may still work but is not
+#   officially supported by Homebrew.
+# - Claude Code requires a paid Claude plan or another supported account/API setup.
+# - On a new Mac, Homebrew may install Apple's Command Line Tools. This can take
+#   5-15 minutes and may appear inactive for stretches.
+# - Written for macOS's built-in /bin/bash 3.2. Do not add Bash 4+ features.
 
 set -u
 
-# ---------- Pretty output (colors only when in a real terminal) ----------
-if [[ -t 1 ]]; then
-  C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'; C_RED=$'\033[31m'; C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'; C_RESET=$'\033[0m'
-else
-  C_GREEN=""; C_YELLOW=""; C_RED=""; C_BOLD=""; C_DIM=""; C_RESET=""
-fi
-
+SCRIPT_VERSION="2.0.0"
 TOTAL_STEPS=11
 STEP_NUM=0
+SUMMARY_NOTE=""
+
+# ---------- Pretty output (colors only in a real terminal) ----------
+if [[ -t 1 ]]; then
+  C_GREEN=$'\033[32m'
+  C_YELLOW=$'\033[33m'
+  C_RED=$'\033[31m'
+  C_BOLD=$'\033[1m'
+  C_DIM=$'\033[2m'
+  C_RESET=$'\033[0m'
+else
+  C_GREEN=""
+  C_YELLOW=""
+  C_RED=""
+  C_BOLD=""
+  C_DIM=""
+  C_RESET=""
+fi
 
 step() {
   STEP_NUM=$((STEP_NUM + 1))
   printf '\n%s=== [%d/%d] %s ===%s\n' "$C_BOLD" "$STEP_NUM" "$TOTAL_STEPS" "$1" "$C_RESET"
 }
+
 ok()   { printf '%s[OK]%s %s\n' "$C_GREEN" "$C_RESET" "$1"; }
 warn() { printf '%s[WARN]%s %s\n' "$C_YELLOW" "$C_RESET" "$1"; }
 fail() { printf '%s[FAIL]%s %s\n' "$C_RED" "$C_RESET" "$1"; }
 note() { printf '%s%s%s\n' "$C_DIM" "$1" "$C_RESET"; }
 
-# ---------- Result tracking for the final summary ----------
+# ---------- Result tracking ----------
 RESULT_NAMES=()
 RESULT_STATES=()
-record() { # record <state: OK|WARN|FAIL> <name>
+
+record() { # record <OK|WARN|FAIL> <name>
   RESULT_STATES+=("$1")
   RESULT_NAMES+=("$2")
 }
 
+results_have_state() {
+  local wanted="$1"
+  local i
+
+  if [[ ${#RESULT_STATES[@]} -eq 0 ]]; then
+    return 1
+  fi
+
+  for i in "${!RESULT_STATES[@]}"; do
+    if [[ "${RESULT_STATES[$i]}" == "$wanted" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 print_summary() {
-  # Guard: expanding an empty array errors under `set -u` on macOS's bash 3.2.
+  local i
+  local had_warning=0
+  local had_failure=0
+
   if [[ ${#RESULT_NAMES[@]} -eq 0 ]]; then
     return 0
   fi
+
   printf '\n%s=== Setup summary ===%s\n' "$C_BOLD" "$C_RESET"
-  local i had_fail=0
+
   for i in "${!RESULT_NAMES[@]}"; do
     case "${RESULT_STATES[$i]}" in
-      OK)   printf '  %s✔%s %s\n' "$C_GREEN" "$C_RESET" "${RESULT_NAMES[$i]}" ;;
-      WARN) printf '  %s!%s %s\n' "$C_YELLOW" "$C_RESET" "${RESULT_NAMES[$i]}"; had_fail=1 ;;
-      FAIL) printf '  %s✘%s %s\n' "$C_RED" "$C_RESET" "${RESULT_NAMES[$i]}"; had_fail=1 ;;
+      OK)
+        printf '  %s✔%s %s\n' "$C_GREEN" "$C_RESET" "${RESULT_NAMES[$i]}"
+        ;;
+      WARN)
+        printf '  %s!%s %s\n' "$C_YELLOW" "$C_RESET" "${RESULT_NAMES[$i]}"
+        had_warning=1
+        ;;
+      FAIL)
+        printf '  %s✘%s %s\n' "$C_RED" "$C_RESET" "${RESULT_NAMES[$i]}"
+        had_failure=1
+        ;;
     esac
   done
-  if [[ $had_fail -eq 1 ]]; then
-    printf '\n%sSome items need attention. Close and reopen Terminal, then rerun this script — it is safe to re-run.%s\n' "$C_YELLOW" "$C_RESET"
+
+  if [[ -n "$SUMMARY_NOTE" ]]; then
+    printf '\n%sNext action:%s %s\n' "$C_BOLD" "$C_RESET" "$SUMMARY_NOTE"
+  elif [[ $had_failure -eq 1 ]]; then
+    printf '\n%sFix the failed items above, then rerun this setup.%s It is safe to rerun.\n' "$C_YELLOW" "$C_RESET"
+  elif [[ $had_warning -eq 1 ]]; then
+    printf '\n%sSetup completed with warnings.%s Review the items marked ! above.\n' "$C_YELLOW" "$C_RESET"
   else
     printf '\n%s🎉 Everything installed successfully!%s\n' "$C_GREEN$C_BOLD" "$C_RESET"
   fi
 }
 
+stop_setup() { # stop_setup <result name> <failure message> <next action>
+  fail "$2"
+  record FAIL "$1"
+  SUMMARY_NOTE="$3"
+  print_summary
+  exit 1
+}
+
 on_interrupt() {
-  printf '\n\n%sSetup was interrupted.%s Nothing is broken — rerun the script any time to continue where it left off.\n' "$C_YELLOW" "$C_RESET"
+  printf '\n\n%sSetup was interrupted.%s Nothing is broken. Rerun it at any time to continue.\n' "$C_YELLOW" "$C_RESET"
   exit 130
 }
-trap on_interrupt INT
+trap on_interrupt INT TERM
 
 # ---------- Helpers ----------
 append_once() {
   local file="$1"
   local line="$2"
+
   mkdir -p "$(dirname "$file")"
   touch "$file"
+
   if ! grep -Fqx "$line" "$file" 2>/dev/null; then
     printf '\n%s\n' "$line" >> "$file"
   fi
 }
 
-# shellcheck disable=SC2016  # lines below must be written literally to shell profiles
-load_and_persist_brew_path() {
+load_brew_path() {
   if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
+    return 0
+  fi
+
+  if [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+    return 0
+  fi
+
+  return 1
+}
+
+# shellcheck disable=SC2016 -- these lines must be written literally.
+persist_brew_path() {
+  if [[ -x /opt/homebrew/bin/brew ]]; then
     append_once "$HOME/.zprofile" 'eval "$(/opt/homebrew/bin/brew shellenv)"'
     append_once "$HOME/.bash_profile" 'eval "$(/opt/homebrew/bin/brew shellenv)"'
   elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
     append_once "$HOME/.zprofile" 'eval "$(/usr/local/bin/brew shellenv)"'
     append_once "$HOME/.bash_profile" 'eval "$(/usr/local/bin/brew shellenv)"'
   fi
 }
 
-# shellcheck disable=SC2016  # PATH line must be written literally so it expands at shell startup
-ensure_path_line() {
-  append_once "$HOME/.zprofile" 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"'
-  append_once "$HOME/.bash_profile" 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"'
+# shellcheck disable=SC2016 -- PATH must expand when the profile is loaded.
+ensure_tool_path() {
+  local path_line='export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"'
+
+  append_once "$HOME/.zprofile" "$path_line"
+  append_once "$HOME/.bash_profile" "$path_line"
   export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"
+}
+
+is_admin_user() {
+  local current_user
+  local gid
+
+  current_user="$(id -un)"
+  for gid in $(id -G "$current_user" 2>/dev/null); do
+    # The built-in macOS admin group has GID 80.
+    if [[ "$gid" == "80" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+install_homebrew() {
+  local installer
+
+  echo "Homebrew is not installed yet."
+  echo ""
+
+  if [[ "$(id -u)" == "0" ]]; then
+    stop_setup \
+      "Homebrew" \
+      "This setup was started as root (with sudo). Homebrew must be installed from your normal Mac account." \
+      "Close this Terminal window, open Terminal normally, and run the setup command again without 'sudo'."
+  fi
+
+  if ! is_admin_user; then
+    echo "Homebrew's first installation needs an Administrator account."
+    echo "Your current Mac account is not an Administrator."
+    echo ""
+    echo "To fix this:"
+    echo "1. Open System Settings."
+    echo "2. Open Users & Groups."
+    echo "3. Ask the Mac owner or administrator to enable administrator access for this account,"
+    echo "   or ask them to run this setup from an Administrator account."
+    echo "4. Sign out and sign back in after changing the account type."
+    echo ""
+    stop_setup \
+      "Homebrew" \
+      "Administrator access is required for the first Homebrew installation." \
+      "Use an Administrator account, then rerun this setup."
+  fi
+
+  if [[ ! -t 0 || ! -t 1 ]]; then
+    echo "Homebrew needs an interactive Terminal so it can ask for confirmation and a password."
+    echo "Do not run this installer using 'curl ... | bash'."
+    echo ""
+    echo "Run this exact command in Apple's Terminal app:"
+    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-mac.sh)"'
+    echo ""
+    stop_setup \
+      "Homebrew" \
+      "No interactive Terminal was detected." \
+      "Open Terminal and run the setup with the recommended /bin/bash -c command."
+  fi
+
+  echo "Homebrew needs administrator permission for its first installation."
+  echo "macOS will ask for your normal Mac login password."
+  echo "Nothing will appear while you type the password. Type it anyway, then press Return."
+  echo ""
+
+  if ! /usr/bin/sudo -v; then
+    echo ""
+    stop_setup \
+      "Homebrew" \
+      "macOS did not grant administrator permission." \
+      "Check the password and account permissions, then rerun this setup."
+  fi
+
+  note "On a new Mac, Homebrew may also install Apple's Command Line Tools."
+  note "That can take 5-15 minutes and may appear stuck. Let it finish."
+  note "Homebrew will show what it plans to change and ask you to press Return."
+  echo ""
+
+  installer="$(mktemp "${TMPDIR:-/tmp}/foad-homebrew.XXXXXX")" || {
+    stop_setup \
+      "Homebrew" \
+      "Could not create a temporary installer file." \
+      "Restart the Mac and rerun this setup."
+  }
+
+  if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$installer"; then
+    rm -f "$installer"
+    stop_setup \
+      "Homebrew" \
+      "Could not download the Homebrew installer." \
+      "Check Wi-Fi, VPN, firewall, or content-filter settings, then rerun this setup."
+  fi
+
+  # Force the normal interactive Homebrew behavior. An inherited NONINTERACTIVE
+  # or CI variable would otherwise suppress the password prompt.
+  if ! (
+    unset NONINTERACTIVE CI INTERACTIVE
+    /bin/bash "$installer"
+  ); then
+    rm -f "$installer"
+    echo ""
+    stop_setup \
+      "Homebrew" \
+      "Homebrew did not finish installing." \
+      "Read the Homebrew error immediately above, fix that issue, and rerun this setup."
+  fi
+
+  rm -f "$installer"
+  load_brew_path || true
+  persist_brew_path
+
+  if ! command -v brew >/dev/null 2>&1; then
+    stop_setup \
+      "Homebrew" \
+      "Homebrew finished, but the 'brew' command could not be found." \
+      "Close Terminal, open it again, and rerun this setup."
+  fi
+
+  ok "Homebrew installed."
 }
 
 install_brew_formula() {
   local formula="$1"
   local name="$2"
+
   step "Installing $name"
+
   if brew list --formula "$formula" >/dev/null 2>&1; then
     ok "$name is already installed."
     record OK "$name"
-  else
-    if brew install "$formula"; then
-      ok "$name installed."
-      record OK "$name"
-    else
-      warn "Could not install $name with Homebrew formula: $formula"
-      record FAIL "$name"
-      return 1
-    fi
+    return 0
   fi
+
+  if brew install "$formula"; then
+    ok "$name installed."
+    record OK "$name"
+    return 0
+  fi
+
+  fail "Could not install $name with Homebrew formula '$formula'."
+  record FAIL "$name"
+  return 1
 }
 
 install_first_available_cask() {
   local name="$1"
-  shift
-  step "Installing $name"
-  note "This downloads a full app and can take a few minutes. The progress bar is normal."
-
+  local fallback_url="$2"
   local cask
+  shift 2
+
+  step "Installing $name"
+  note "This downloads a full application and can take several minutes."
+
   for cask in "$@"; do
     if brew list --cask "$cask" >/dev/null 2>&1; then
-      ok "$name is already installed as cask '$cask'."
+      ok "$name is already installed."
       record OK "$name"
       return 0
     fi
@@ -137,70 +338,81 @@ install_first_available_cask() {
 
   for cask in "$@"; do
     if brew install --cask "$cask"; then
-      ok "$name installed with cask '$cask'."
+      ok "$name installed."
       record OK "$name"
       return 0
-    else
-      warn "Could not install $name with cask '$cask'. Trying next option if available."
     fi
+    warn "Homebrew cask '$cask' did not install."
   done
 
-  warn "$name was not installed from Homebrew. Opening the official download page as a fallback."
-  record WARN "$name (install manually from the page that just opened)"
-  open "https://antigravity.google/download" >/dev/null 2>&1 || true
+  warn "$name was not installed. Opening its official download page instead."
+  record WARN "$name (manual installation needed)"
+  open "$fallback_url" >/dev/null 2>&1 || true
   return 1
 }
 
 install_claude_code() {
+  local installer
+
   step "Installing Claude Code"
-  ensure_path_line
+  ensure_tool_path
 
   if command -v claude >/dev/null 2>&1; then
-    ok "Claude Code is already available."
+    ok "Claude Code is already installed."
     record OK "Claude Code"
     return 0
   fi
 
-  # Native installer (recommended by Anthropic). Installs to ~/.local/bin and auto-updates.
-  # Download first, then run: "curl | bash" would report success even if the download
-  # failed (bash exits 0 on empty input), and could execute a partial download.
-  local installer
-  installer="$(mktemp "${TMPDIR:-/tmp}/claude-install.XXXXXX")"
-  if curl -fsSL https://claude.ai/install.sh -o "$installer" && bash "$installer"; then
+  note "Trying Anthropic's recommended native installer first."
+  installer="$(mktemp "${TMPDIR:-/tmp}/foad-claude.XXXXXX")" || installer=""
+
+  if [[ -n "$installer" ]] && \
+     curl -fsSL https://claude.ai/install.sh -o "$installer" && \
+     /bin/bash "$installer"; then
     rm -f "$installer"
-    ensure_path_line
-    ok "Claude Code installer finished."
-    record OK "Claude Code"
-    return 0
-  fi
-  rm -f "$installer"
+    ensure_tool_path
+    hash -r 2>/dev/null || true
 
-  # Fallback 1: official Homebrew cask (stable channel; update later with: brew upgrade claude-code).
-  warn "Claude Code native installer failed. Trying Homebrew cask: claude-code"
+    if command -v claude >/dev/null 2>&1; then
+      ok "Claude Code installed with the native installer."
+      record OK "Claude Code"
+      return 0
+    fi
+
+    warn "The native installer finished, but the 'claude' command is not available yet."
+  else
+    [[ -n "$installer" ]] && rm -f "$installer"
+    warn "Claude Code's native installer did not finish."
+  fi
+
+  warn "Trying the official Homebrew cask instead."
   if brew install --cask claude-code; then
-    ok "Claude Code installed with Homebrew cask. Update later with: brew upgrade claude-code"
-    record OK "Claude Code (via Homebrew)"
+    hash -r 2>/dev/null || true
+    ok "Claude Code installed with Homebrew."
+    record OK "Claude Code (Homebrew)"
     return 0
   fi
 
-  # Fallback 2: npm package (installs the same native binary; wants Node.js 22+,
-  # older Node prints an EBADENGINE warning but still works).
-  warn "Homebrew cask failed. Trying npm fallback: npm install -g @anthropic-ai/claude-code"
+  warn "Trying the npm fallback."
   if command -v npm >/dev/null 2>&1 && npm install -g @anthropic-ai/claude-code; then
-    ok "Claude Code installed with npm fallback."
-    record OK "Claude Code (via npm)"
+    hash -r 2>/dev/null || true
+    ok "Claude Code installed with npm."
+    record OK "Claude Code (npm)"
     return 0
   fi
 
-  fail "Claude Code install failed. Install manually from: https://code.claude.com/docs/en/setup"
+  fail "Claude Code could not be installed automatically."
+  echo "Manual instructions: https://code.claude.com/docs/en/setup"
   record FAIL "Claude Code"
   return 1
 }
 
 write_claude_starter_files() {
+  local skill_dir="$HOME/.claude/skills/summarize-changes"
+  local command_dir="$HOME/.claude/commands"
+
   step "Creating Claude Code starter skill and command"
 
-  local skill_dir="$HOME/.claude/skills/summarize-changes"
   mkdir -p "$skill_dir"
   if [[ -f "$skill_dir/SKILL.md" ]]; then
     ok "Keeping existing file: $skill_dir/SKILL.md"
@@ -226,7 +438,6 @@ Use this skill when the user wants to review current uncommitted Git changes bef
 SKILL_EOF
   fi
 
-  local command_dir="$HOME/.claude/commands"
   mkdir -p "$command_dir"
   if [[ -f "$command_dir/summarize-changes.md" ]]; then
     ok "Keeping existing file: $command_dir/summarize-changes.md"
@@ -255,16 +466,16 @@ COMMAND_EOF
 }
 
 write_terminal_guide() {
-  step "Creating beginner terminal guide"
-
   local desktop="$HOME/Desktop"
+
+  step "Creating beginner terminal guide"
   mkdir -p "$desktop"
 
   cat > "$desktop/FOAD-terminal-basics.txt" <<'GUIDE_EOF'
 FOAD Terminal Basics - macOS
 
 FIRST CHECKS
-Run these after install:
+Run these after installation:
 
 git --version
 node --version
@@ -273,17 +484,18 @@ python3 --version
 claude --version
 
 If a command is not found, close Terminal, open it again, and retry.
-If Claude Code misbehaves, run: claude doctor
-It checks your install, login, and configuration.
+For Claude Code installation or login problems, run:
+
+claude doctor
 
 BASIC COMMANDS
-pwd                     Show current folder
+pwd                     Show the current folder
 ls                      List files
 cd folder-name          Move into a folder
 cd ..                   Move back one folder
 mkdir my-project        Create a folder
-touch file.txt          Create a file
-clear                   Clear the screen
+open .                  Open the current folder in Finder
+clear                   Clear the Terminal screen
 
 GIT BASICS
 git clone REPO_URL      Download a project
@@ -291,44 +503,50 @@ git status              See changed files
 git add .               Stage all changes
 git commit -m "message" Save a commit
 
+Before your first commit, Git may ask for your name and email. Set them with:
+
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
 NODE BASICS
 npm install             Install project packages
 npm run dev             Start many web projects
 
 PYTHON BASICS
-python3 --version       Check Python is installed
-pip3 install requests   Install a Python package
-python3 script.py       Run a Python script
+python3 --version             Check Python
+python3 -m venv .venv         Create a project environment
+source .venv/bin/activate     Activate it
+python -m pip install requests Install a package inside it
+deactivate                    Leave the environment
 
 CLAUDE CODE
 claude                  Start Claude Code
-claude doctor           Diagnose install or login problems
-/login                  Login or register when inside Claude Code
-/help                   Show Claude Code help
-/init                   Let Claude analyze a project and create CLAUDE.md
+claude doctor           Diagnose installation or login problems
+/login                  Log in while inside Claude Code
+/help                   Show help
+/init                   Analyze a project and create CLAUDE.md
 /skills                 Show available skills, if supported
 /summarize-changes      Run FOAD's starter review command
 
-Note: Claude Code needs a paid Claude plan (Pro or higher) or an API account.
-The free Claude.ai plan does not include Claude Code.
+Claude Code requires a supported paid plan, Console account, or supported
+third-party provider. The free Claude.ai plan does not include Claude Code.
 
 ANTIGRAVITY IDE
 Open Google Antigravity IDE from Applications.
 Sign in with a Google account on first launch.
 
 KEEPING THINGS UP TO DATE
-brew update && brew upgrade    Update everything installed with Homebrew
-Claude Code (native install) updates itself automatically.
+brew update && brew upgrade    Update Homebrew software
+brew upgrade --cask claude-code Update Claude Code if installed with Homebrew
+
+A native Claude Code installation updates itself automatically.
 
 GETTING UNSTUCK
-Copy any error message and paste it into Claude (claude.ai or Claude Code).
-Screenshots of errors work too. This solves most beginner problems.
-
-WORKSHOP TIPS
-- "command not found"? Close Terminal, open a new one, try again.
-- Something looks frozen? Downloads can be slow on shared Wi-Fi. Wait a bit.
-- Still stuck? Ask the instructor - that is what workshops are for.
-- You cannot break anything by re-running the setup script.
+- Copy the complete error message, including a few lines above it.
+- Paste it into Claude or show it to the workshop instructor.
+- A password prompt shows no characters while you type. This is normal.
+- "command not found" often means Terminal needs to be reopened once.
+- Re-running the FOAD setup is safe; installed items are skipped.
 
 FIRST TEST PROJECT
 mkdir foad-test
@@ -344,15 +562,19 @@ GUIDE_EOF
 
 check_command_version() {
   local command="$1"
-  local arg="${2:---version}"
+  local display_name="$2"
+  local arg="${3:---version}"
+  local output
+
   if command -v "$command" >/dev/null 2>&1; then
-    local output
     output="$("$command" "$arg" 2>&1 | head -n 1 || true)"
-    ok "$command works: $output"
-  else
-    warn "$command is not available yet. Restart Terminal and try: $command $arg"
-    record WARN "$command not on PATH yet (restart Terminal)"
+    ok "$display_name works: $output"
+    return 0
   fi
+
+  warn "$display_name is not available in this Terminal session."
+  record WARN "$display_name verification (reopen Terminal and retry)"
+  return 1
 }
 
 # ---------- Start ----------
@@ -369,96 +591,151 @@ cat <<'BANNER'
 BANNER
 printf '%s' "$C_RESET"
 
-echo "This installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,"
-echo "Claude Code, and FOAD starter files. It usually takes 5-15 minutes."
-echo "Homebrew may ask for your Mac password. That is normal."
-note "Safe to re-run: anything already installed is skipped."
+printf 'Installer version: %s\n' "$SCRIPT_VERSION"
+echo "This installs Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,"
+echo "Claude Code, and FOAD starter files. A new Mac commonly takes 10-25 minutes."
+echo "Homebrew may ask for your Mac password and permission to install developer tools."
+note "Safe to rerun: anything already installed is skipped."
 
 step "Checking your Mac and internet connection"
-os_version="$(sw_vers -productVersion 2>/dev/null || echo "unknown")"
-os_major="${os_version%%.*}"
-if [[ "$os_major" =~ ^[0-9]+$ ]] && (( os_major < 12 )); then
-  warn "You are on macOS $os_version. Some apps (like Antigravity IDE) need macOS 12 or newer."
-  record WARN "macOS version is old ($os_version)"
-else
-  ok "macOS $os_version detected."
+
+if [[ "$(uname -s 2>/dev/null || echo unknown)" != "Darwin" ]]; then
+  stop_setup \
+    "Operating system" \
+    "This installer only works on macOS." \
+    "Run it from a Mac using Apple's Terminal app."
 fi
 
-if curl -fsSL --max-time 15 --head https://github.com >/dev/null 2>&1; then
-  ok "Internet connection works."
+if [[ "$(id -u)" == "0" ]]; then
+  stop_setup \
+    "User account" \
+    "Do not run this setup with 'sudo'. Homebrew must be installed from your normal Mac account." \
+    "Close this Terminal window, open Terminal normally, and rerun the setup command without 'sudo'."
+fi
+
+os_version="$(sw_vers -productVersion 2>/dev/null || echo unknown)"
+os_major="${os_version%%.*}"
+
+if ! [[ "$os_major" =~ ^[0-9]+$ ]]; then
+  stop_setup \
+    "macOS version" \
+    "Could not determine the macOS version." \
+    "Restart the Mac, open Terminal, and rerun this setup."
+elif (( os_major < 13 )); then
+  stop_setup \
+    "macOS version" \
+    "macOS $os_version is too old for the complete setup. Claude Code requires macOS 13 or newer." \
+    "Update macOS to version 13 or newer, then rerun this setup."
+elif (( os_major == 13 )); then
+  warn "macOS $os_version detected. Claude Code supports it, but current Homebrew support starts at macOS 14."
+  record WARN "macOS $os_version (Homebrew may work but is not officially supported)"
 else
-  fail "No internet connection detected. Connect to Wi-Fi and rerun this script."
-  record FAIL "Internet connection"
-  print_summary
-  exit 1
+  ok "macOS $os_version detected."
+  record OK "macOS $os_version"
+fi
+
+if curl -fsSL --connect-timeout 10 --max-time 20 \
+  https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh \
+  -o /dev/null; then
+  ok "Internet connection works."
+  record OK "Internet connection"
+else
+  stop_setup \
+    "Internet connection" \
+    "The setup could not reach GitHub." \
+    "Check Wi-Fi, VPN, firewall, or content-filter settings, then rerun this setup."
 fi
 
 step "Checking Homebrew"
+
+# A previous installation may exist in its standard location even if this shell
+# has not loaded Homebrew's PATH yet.
+load_brew_path || true
+
 if command -v brew >/dev/null 2>&1; then
   ok "Homebrew is already installed."
 else
-  echo "Homebrew not found. Installing Homebrew..."
-  echo "macOS will ask for your password. Type your Mac login password and press Return."
-  echo "The screen will NOT show characters as you type the password. That is normal."
-  note "Heads up: on a brand-new Mac this also installs Apple's Command Line Tools."
-  note "That part can take 5-15 minutes and may look stuck. It is not stuck — let it run."
-  # NONINTERACTIVE=1 skips Homebrew's "Press RETURN to continue" confirmation so
-  # beginners do not think the installer has frozen. The sudo password prompt
-  # still appears (and must) because Homebrew needs it to create its directories.
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
-    fail "Homebrew install failed. Install Homebrew manually from https://brew.sh and rerun this script."
-    record FAIL "Homebrew"
-    print_summary
-    exit 1
-  }
+  install_homebrew
 fi
 
-load_and_persist_brew_path
-ensure_path_line
+load_brew_path || true
+persist_brew_path
+ensure_tool_path
 
 if ! command -v brew >/dev/null 2>&1; then
-  warn "Homebrew was installed but is not on PATH yet. Close and reopen Terminal, then rerun this script."
-  record WARN "Homebrew (restart Terminal, rerun script)"
-  print_summary
-  exit 1
+  stop_setup \
+    "Homebrew" \
+    "The 'brew' command is still unavailable." \
+    "Close Terminal, open it again, and rerun this setup."
 fi
 record OK "Homebrew"
 
-step "Updating Homebrew package list"
-note "This can take a minute on first run."
-brew update || warn "brew update failed; continuing with existing package index."
+step "Updating Homebrew package information"
+note "This can take a minute on the first run."
+if brew update; then
+  ok "Homebrew package information is current."
+  record OK "Homebrew package information"
+else
+  warn "Homebrew could not refresh its package information. Continuing with available information."
+  record WARN "Homebrew package information (update failed)"
+fi
 
 install_brew_formula "git" "Git" || true
 install_brew_formula "node" "Node.js + npm" || true
-# Python 3 (+ pip): agents and Claude Code frequently shell out to it for scripts.
 install_brew_formula "python" "Python 3 + pip" || true
-# Cask "antigravity-ide" verified to exist in homebrew-cask (Google Antigravity IDE).
-# Note: a separate "antigravity" cask (Antigravity 2 agent orchestration platform) also exists; not the IDE.
-install_first_available_cask "Google Antigravity IDE" "antigravity-ide" || true
+
+install_first_available_cask \
+  "Google Antigravity IDE" \
+  "https://antigravity.google/download" \
+  "antigravity-ide" || true
+
 install_claude_code || true
 write_claude_starter_files
 write_terminal_guide
 
-step "Verifying installs"
-check_command_version git
-check_command_version node
-check_command_version npm
-check_command_version python3
-check_command_version pip3
-check_command_version claude
+step "Verifying installed commands"
+load_brew_path || true
+ensure_tool_path
+hash -r 2>/dev/null || true
+
+check_command_version git "Git" || true
+check_command_version node "Node.js" || true
+check_command_version npm "npm" || true
+check_command_version python3 "Python 3" || true
+check_command_version pip3 "pip3" || true
+check_command_version claude "Claude Code" || true
 
 print_summary
 
 printf '\n%s=== Next steps ===%s\n' "$C_BOLD" "$C_RESET"
-printf '1. %sClose this Terminal window and open a new one.%s (This is required — new commands\n' "$C_BOLD" "$C_RESET"
-echo "   like 'claude' only work in a fresh Terminal.)"
-echo "2. Run: claude"
-echo "3. Inside Claude Code, login/register if asked. You can also type: /login"
-echo "   (Claude Code needs a paid Claude plan or API account - the free plan is not enough.)"
-echo "4. Open Google Antigravity IDE from Applications and sign in with a Google account."
-echo "5. Read the guide that just opened: FOAD-terminal-basics.txt (also on your Desktop)."
-echo ""
-ok "FOAD setup finished. It is safe to re-run this script any time."
 
-# Open the beginner guide so new users see it immediately.
-open -e "$HOME/Desktop/FOAD-terminal-basics.txt" >/dev/null 2>&1 || true
+if results_have_state FAIL; then
+  echo "1. Fix the items marked ✘ in the summary above."
+  echo "2. Rerun this setup. Installed items will be skipped."
+  echo "3. Share the complete error output with the workshop instructor if it still fails."
+else
+  echo "1. Close this Terminal window and open a new one once."
+  echo "2. Run: claude"
+  echo "3. Follow the browser login instructions."
+  echo "4. Open Google Antigravity IDE from Applications and sign in."
+  echo "5. Read FOAD-terminal-basics.txt on your Desktop."
+fi
+
+echo ""
+
+if [[ -f "$HOME/Desktop/FOAD-terminal-basics.txt" ]]; then
+  open -e "$HOME/Desktop/FOAD-terminal-basics.txt" >/dev/null 2>&1 || true
+fi
+
+if results_have_state FAIL; then
+  fail "FOAD setup finished with one or more failed items."
+  exit 1
+fi
+
+if results_have_state WARN; then
+  warn "FOAD setup finished with warnings. Review the summary above."
+  exit 0
+fi
+
+ok "FOAD setup finished successfully."
+exit 0
