@@ -7,11 +7,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 clear
 printf '\nFOAD Dev Setup for macOS\n'
-printf 'This will install Homebrew if needed, Git, Node.js/npm, Google Antigravity IDE, Claude Code, and starter files.\n\n'
+printf 'This will install Homebrew if needed, Git, Node.js/npm, Python, Google Antigravity IDE, Claude Code, and starter files.\n\n'
+printf 'Allow 10-25 minutes and several gigabytes of disk space.\n'
+printf 'Homebrew may request administrator approval.\n'
+printf 'Claude Code requires an eligible subscription, Console account, or supported provider.\n'
+printf 'Antigravity IDE sign-in may require a Google account.\n'
+printf 'The setup adds PATH lines and creates files under ~/.claude and Desktop.\n\n'
 printf 'Press Enter to start, or close this window to cancel.\n'
 read -r _
 
-/bin/bash "$SCRIPT_DIR/install-mac.sh"
+status=0
+FOAD_ASSUME_YES=1 /bin/bash "$SCRIPT_DIR/install-mac.sh" || status=$?
 
-printf '\nSetup finished. You can close this window.\n'
+if [[ $status -eq 0 ]]; then
+  printf '\nSetup finished. Review the summary above, then follow the next steps.\n'
+else
+  printf '\nSetup did not complete (exit %d). Follow the recovery guidance above.\n' "$status"
+fi
 read -r -p "Press Enter to close..." _
+exit "$status"

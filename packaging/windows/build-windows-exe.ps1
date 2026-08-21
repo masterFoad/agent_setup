@@ -9,6 +9,17 @@ dist\windows\FOAD-Dev-Setup-Windows.exe
 #>
 
 $ErrorActionPreference = "Stop"
+$root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$version = (Get-Content (Join-Path $root "VERSION") -Raw).Trim()
+
+if (-not $env:FOAD_ALLOW_UNTAGGED_BUILD) {
+    $dirty = git -C $root status --porcelain
+    if ($dirty) { throw "Release builds require a clean Git working tree." }
+    $tag = git -C $root describe --exact-match --tags HEAD 2>$null
+    if ($LASTEXITCODE -ne 0 -or $tag -ne "v$version") {
+        throw "Release builds require HEAD to be tagged v$version. Set FOAD_ALLOW_UNTAGGED_BUILD=1 only for local test builds."
+    }
+}
 
 function Step($msg) {
     Write-Host ""
@@ -40,7 +51,14 @@ if (-not $isccPath) {
 }
 
 Step "Building EXE"
-& $isccPath ".\packaging\windows\foad-dev-setup.iss"
+& $isccPath "/DMyAppVersion=$version" ".\packaging\windows\foad-dev-setup.iss"
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
+
+$artifact = Join-Path $root "dist\windows\FOAD-Dev-Setup-Windows.exe"
+$checksum = (Get-FileHash -Algorithm SHA256 $artifact).Hash.ToLowerInvariant()
+"$checksum  FOAD-Dev-Setup-Windows.exe" | Set-Content "$artifact.sha256" -Encoding ascii
 
 Step "Done"
 Write-Host "Built: dist\windows\FOAD-Dev-Setup-Windows.exe" -ForegroundColor Green
+Write-Host "Checksum: dist\windows\FOAD-Dev-Setup-Windows.exe.sha256" -ForegroundColor Green
+Write-Host "Production: Authenticode-sign the EXE, then regenerate this checksum before publishing." -ForegroundColor Yellow

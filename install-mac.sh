@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # FOAD Dev Setup - macOS
-# Version 2.0.0
+# Version 2.1.0
 #
 # Installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,
-# Claude Code, and beginner starter files. Safe to re-run.
+# Claude Code, and beginner starter files. Reruns preserve existing workshop files.
 #
 # Website command:
-# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-mac.sh)"
+# curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-mac.sh -o /tmp/foad-install-mac.sh
+# /bin/bash /tmp/foad-install-mac.sh
 #
 # WORKSHOP INSTRUCTOR NOTES:
 # - Ask attendees to run this before the workshop if possible. Downloads are large,
 #   and a room full of people installing at once can overwhelm venue Wi-Fi.
-# - Attendees need macOS 13+, an Administrator account, their Mac login password,
+# - Attendees need macOS 14+, an Administrator account, their Mac login password,
 #   and a Google account for Antigravity IDE.
-# - Homebrew officially supports macOS 14+. macOS 13 may still work but is not
-#   officially supported by Homebrew.
+# - The full setup requires macOS 14+, matching Homebrew's supported baseline.
 # - Claude Code requires a paid Claude plan or another supported account/API setup.
 # - On a new Mac, Homebrew may install Apple's Command Line Tools. This can take
 #   5-15 minutes and may appear inactive for stretches.
@@ -22,7 +22,7 @@
 
 set -u
 
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.1.0"
 TOTAL_STEPS=11
 STEP_NUM=0
 SUMMARY_NOTE=""
@@ -109,7 +109,7 @@ print_summary() {
   if [[ -n "$SUMMARY_NOTE" ]]; then
     printf '\n%sNext action:%s %s\n' "$C_BOLD" "$C_RESET" "$SUMMARY_NOTE"
   elif [[ $had_failure -eq 1 ]]; then
-    printf '\n%sFix the failed items above, then rerun this setup.%s It is safe to rerun.\n' "$C_YELLOW" "$C_RESET"
+    printf '\n%sFix the failed items above, then rerun this setup.%s Existing workshop files are preserved.\n' "$C_YELLOW" "$C_RESET"
   elif [[ $had_warning -eq 1 ]]; then
     printf '\n%sSetup completed with warnings.%s Review the items marked ! above.\n' "$C_YELLOW" "$C_RESET"
   else
@@ -125,6 +125,8 @@ stop_setup() { # stop_setup <result name> <failure message> <next action>
   exit 1
 }
 
+# Invoked indirectly by the signal trap below.
+# shellcheck disable=SC2329
 on_interrupt() {
   printf '\n\n%sSetup was interrupted.%s Nothing is broken. Rerun it at any time to continue.\n' "$C_YELLOW" "$C_RESET"
   exit 130
@@ -136,11 +138,16 @@ append_once() {
   local file="$1"
   local line="$2"
 
-  mkdir -p "$(dirname "$file")"
-  touch "$file"
+  if ! mkdir -p "$(dirname "$file")" || ! touch "$file"; then
+    fail "Could not access shell profile: $file"
+    return 1
+  fi
 
   if ! grep -Fqx "$line" "$file" 2>/dev/null; then
-    printf '\n%s\n' "$line" >> "$file"
+    if ! printf '\n%s\n' "$line" >> "$file"; then
+      fail "Could not update shell profile: $file"
+      return 1
+    fi
   fi
 }
 
@@ -158,23 +165,25 @@ load_brew_path() {
   return 1
 }
 
-# shellcheck disable=SC2016 -- these lines must be written literally.
+# These lines must be written literally.
+# shellcheck disable=SC2016
 persist_brew_path() {
   if [[ -x /opt/homebrew/bin/brew ]]; then
-    append_once "$HOME/.zprofile" 'eval "$(/opt/homebrew/bin/brew shellenv)"'
-    append_once "$HOME/.bash_profile" 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+    append_once "$HOME/.zprofile" 'eval "$(/opt/homebrew/bin/brew shellenv)"' || return 1
+    append_once "$HOME/.bash_profile" 'eval "$(/opt/homebrew/bin/brew shellenv)"' || return 1
   elif [[ -x /usr/local/bin/brew ]]; then
-    append_once "$HOME/.zprofile" 'eval "$(/usr/local/bin/brew shellenv)"'
-    append_once "$HOME/.bash_profile" 'eval "$(/usr/local/bin/brew shellenv)"'
+    append_once "$HOME/.zprofile" 'eval "$(/usr/local/bin/brew shellenv)"' || return 1
+    append_once "$HOME/.bash_profile" 'eval "$(/usr/local/bin/brew shellenv)"' || return 1
   fi
 }
 
-# shellcheck disable=SC2016 -- PATH must expand when the profile is loaded.
+# PATH must expand when the profile is loaded.
+# shellcheck disable=SC2016
 ensure_tool_path() {
   local path_line='export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"'
 
-  append_once "$HOME/.zprofile" "$path_line"
-  append_once "$HOME/.bash_profile" "$path_line"
+  append_once "$HOME/.zprofile" "$path_line" || return 1
+  append_once "$HOME/.bash_profile" "$path_line" || return 1
   export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"
 }
 
@@ -227,7 +236,8 @@ install_homebrew() {
     echo "Do not run this installer using 'curl ... | bash'."
     echo ""
     echo "Run this exact command in Apple's Terminal app:"
-    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-mac.sh)"'
+    echo 'curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-mac.sh -o /tmp/foad-install-mac.sh'
+    echo '/bin/bash /tmp/foad-install-mac.sh'
     echo ""
     stop_setup \
       "Homebrew" \
@@ -284,7 +294,10 @@ install_homebrew() {
 
   rm -f "$installer"
   load_brew_path || true
-  persist_brew_path
+  persist_brew_path || stop_setup \
+    "Shell profile" \
+    "Homebrew installed, but its PATH could not be saved to your shell profile." \
+    "Check ownership and write access for .zprofile/.bash_profile, then rerun setup."
 
   if ! command -v brew >/dev/null 2>&1; then
     stop_setup \
@@ -346,7 +359,7 @@ install_first_available_cask() {
   done
 
   warn "$name was not installed. Opening its official download page instead."
-  record WARN "$name (manual installation needed)"
+  record FAIL "$name (manual installation needed)"
   open "$fallback_url" >/dev/null 2>&1 || true
   return 1
 }
@@ -355,12 +368,18 @@ install_claude_code() {
   local installer
 
   step "Installing Claude Code"
-  ensure_tool_path
+  if ! ensure_tool_path; then
+    fail "Claude Code PATH could not be saved to your shell profile."
+    record FAIL "Claude Code PATH"
+    return 1
+  fi
 
-  if command -v claude >/dev/null 2>&1; then
+  if command -v claude >/dev/null 2>&1 && claude --version >/dev/null 2>&1; then
     ok "Claude Code is already installed."
     record OK "Claude Code"
     return 0
+  elif command -v claude >/dev/null 2>&1; then
+    warn "A Claude Code command exists but did not pass verification; attempting repair."
   fi
 
   note "Trying Anthropic's recommended native installer first."
@@ -370,10 +389,14 @@ install_claude_code() {
      curl -fsSL https://claude.ai/install.sh -o "$installer" && \
      /bin/bash "$installer"; then
     rm -f "$installer"
-    ensure_tool_path
+    if ! ensure_tool_path; then
+      fail "Claude Code installed, but its PATH could not be saved."
+      record FAIL "Claude Code PATH"
+      return 1
+    fi
     hash -r 2>/dev/null || true
 
-    if command -v claude >/dev/null 2>&1; then
+    if command -v claude >/dev/null 2>&1 && claude --version >/dev/null 2>&1; then
       ok "Claude Code installed with the native installer."
       record OK "Claude Code"
       return 0
@@ -386,7 +409,7 @@ install_claude_code() {
   fi
 
   warn "Trying the official Homebrew cask instead."
-  if brew install --cask claude-code; then
+  if brew install --cask claude-code && claude --version >/dev/null 2>&1; then
     hash -r 2>/dev/null || true
     ok "Claude Code installed with Homebrew."
     record OK "Claude Code (Homebrew)"
@@ -394,7 +417,9 @@ install_claude_code() {
   fi
 
   warn "Trying the npm fallback."
-  if command -v npm >/dev/null 2>&1 && npm install -g @anthropic-ai/claude-code; then
+  if command -v npm >/dev/null 2>&1 && \
+     npm install -g @anthropic-ai/claude-code && \
+     claude --version >/dev/null 2>&1; then
     hash -r 2>/dev/null || true
     ok "Claude Code installed with npm."
     record OK "Claude Code (npm)"
@@ -413,11 +438,15 @@ write_claude_starter_files() {
 
   step "Creating Claude Code starter skill and command"
 
-  mkdir -p "$skill_dir"
+  if ! mkdir -p "$skill_dir"; then
+    fail "Could not create Claude skill folder: $skill_dir"
+    record FAIL "Claude starter files"
+    return 1
+  fi
   if [[ -f "$skill_dir/SKILL.md" ]]; then
     ok "Keeping existing file: $skill_dir/SKILL.md"
   else
-    cat > "$skill_dir/SKILL.md" <<'SKILL_EOF'
+    if ! cat > "$skill_dir/SKILL.md" <<'SKILL_EOF'
 ---
 name: summarize-changes
 description: Review the current Git working tree and summarize changed files, risks, and suggested tests before committing.
@@ -436,13 +465,22 @@ Use this skill when the user wants to review current uncommitted Git changes bef
 5. List possible bugs, missing tests, risky changes, security concerns, unclear code, and breaking changes.
 6. If there are no changes, say the working tree is clean.
 SKILL_EOF
+    then
+      fail "Could not write $skill_dir/SKILL.md"
+      record FAIL "Claude starter files"
+      return 1
+    fi
   fi
 
-  mkdir -p "$command_dir"
+  if ! mkdir -p "$command_dir"; then
+    fail "Could not create Claude command folder: $command_dir"
+    record FAIL "Claude starter files"
+    return 1
+  fi
   if [[ -f "$command_dir/summarize-changes.md" ]]; then
     ok "Keeping existing file: $command_dir/summarize-changes.md"
   else
-    cat > "$command_dir/summarize-changes.md" <<'COMMAND_EOF'
+    if ! cat > "$command_dir/summarize-changes.md" <<'COMMAND_EOF'
 Review my current Git working tree before I commit.
 
 Please run:
@@ -459,6 +497,11 @@ Then summarize:
 
 If there are no changes, say the working tree is clean.
 COMMAND_EOF
+    then
+      fail "Could not write $command_dir/summarize-changes.md"
+      record FAIL "Claude starter files"
+      return 1
+    fi
   fi
 
   ok "Claude starter files are ready."
@@ -467,11 +510,22 @@ COMMAND_EOF
 
 write_terminal_guide() {
   local desktop="$HOME/Desktop"
+  local guide="$desktop/FOAD-terminal-basics.txt"
 
   step "Creating beginner terminal guide"
-  mkdir -p "$desktop"
+  if ! mkdir -p "$desktop"; then
+    fail "Could not access the Desktop folder: $desktop"
+    record FAIL "Beginner guide on Desktop"
+    return 1
+  fi
 
-  cat > "$desktop/FOAD-terminal-basics.txt" <<'GUIDE_EOF'
+  if [[ -f "$guide" ]]; then
+    ok "Keeping existing guide: $guide"
+    record OK "Beginner guide on Desktop"
+    return 0
+  fi
+
+  if ! cat > "$guide" <<'GUIDE_EOF'
 FOAD Terminal Basics - macOS
 
 FIRST CHECKS
@@ -546,7 +600,7 @@ GETTING UNSTUCK
 - Paste it into Claude or show it to the workshop instructor.
 - A password prompt shows no characters while you type. This is normal.
 - "command not found" often means Terminal needs to be reopened once.
-- Re-running the FOAD setup is safe; installed items are skipped.
+- Re-running preserves existing workshop files and skips detected packages.
 
 FIRST TEST PROJECT
 mkdir foad-test
@@ -555,8 +609,13 @@ git init
 echo hello > README.md
 claude
 GUIDE_EOF
+  then
+    fail "Could not write the beginner guide: $guide"
+    record FAIL "Beginner guide on Desktop"
+    return 1
+  fi
 
-  ok "Wrote guide to: $desktop/FOAD-terminal-basics.txt"
+  ok "Wrote guide to: $guide"
   record OK "Beginner guide on Desktop"
 }
 
@@ -565,15 +624,23 @@ check_command_version() {
   local display_name="$2"
   local arg="${3:---version}"
   local output
+  local status
 
   if command -v "$command" >/dev/null 2>&1; then
-    output="$("$command" "$arg" 2>&1 | head -n 1 || true)"
-    ok "$display_name works: $output"
-    return 0
+    output="$("$command" "$arg" 2>&1)"
+    status=$?
+    output="$(printf '%s\n' "$output" | head -n 1)"
+    if [[ $status -eq 0 ]]; then
+      ok "$display_name works: $output"
+      return 0
+    fi
+    warn "$display_name was found, but its version check failed (exit $status): $output"
+    record FAIL "$display_name verification"
+    return 1
   fi
 
   warn "$display_name is not available in this Terminal session."
-  record WARN "$display_name verification (reopen Terminal and retry)"
+  record FAIL "$display_name verification (reopen Terminal and retry)"
   return 1
 }
 
@@ -595,7 +662,23 @@ printf 'Installer version: %s\n' "$SCRIPT_VERSION"
 echo "This installs Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,"
 echo "Claude Code, and FOAD starter files. A new Mac commonly takes 10-25 minutes."
 echo "Homebrew may ask for your Mac password and permission to install developer tools."
-note "Safe to rerun: anything already installed is skipped."
+note "Reruns preserve existing workshop files and skip detected packages."
+
+if [[ "${FOAD_ASSUME_YES:-0}" != "1" ]]; then
+  echo ""
+  echo "Before continuing:"
+  echo "- Allow 10-25 minutes and several gigabytes of free disk space."
+  echo "- Homebrew may request administrator approval."
+  echo "- Claude Code needs an eligible Claude subscription, Console account, or supported provider."
+  echo "- Antigravity IDE sign-in may require a Google account."
+  echo "- This setup adds PATH lines to .zprofile/.bash_profile and creates files under ~/.claude and Desktop."
+  printf 'Press Enter to continue, or type q then Enter to cancel: '
+  read -r consent
+  if [[ "$consent" == "q" || "$consent" == "Q" ]]; then
+    echo "Setup cancelled. No installation steps were started."
+    exit 0
+  fi
+fi
 
 step "Checking your Mac and internet connection"
 
@@ -621,14 +704,11 @@ if ! [[ "$os_major" =~ ^[0-9]+$ ]]; then
     "macOS version" \
     "Could not determine the macOS version." \
     "Restart the Mac, open Terminal, and rerun this setup."
-elif (( os_major < 13 )); then
+elif (( os_major < 14 )); then
   stop_setup \
     "macOS version" \
-    "macOS $os_version is too old for the complete setup. Claude Code requires macOS 13 or newer." \
-    "Update macOS to version 13 or newer, then rerun this setup."
-elif (( os_major == 13 )); then
-  warn "macOS $os_version detected. Claude Code supports it, but current Homebrew support starts at macOS 14."
-  record WARN "macOS $os_version (Homebrew may work but is not officially supported)"
+    "macOS $os_version is not supported by this Homebrew-based setup." \
+    "Update macOS to version 14 or newer, then rerun this setup."
 else
   ok "macOS $os_version detected."
   record OK "macOS $os_version"
@@ -659,8 +739,14 @@ else
 fi
 
 load_brew_path || true
-persist_brew_path
-ensure_tool_path
+persist_brew_path || stop_setup \
+  "Shell profile" \
+  "Homebrew is available now, but its PATH could not be saved to your shell profile." \
+  "Check ownership and write access for .zprofile/.bash_profile, then rerun setup."
+ensure_tool_path || stop_setup \
+  "Shell profile" \
+  "Tool paths could not be saved to your shell profile." \
+  "Check ownership and write access for .zprofile/.bash_profile, then rerun setup."
 
 if ! command -v brew >/dev/null 2>&1; then
   stop_setup \
@@ -690,12 +776,15 @@ install_first_available_cask \
   "antigravity-ide" || true
 
 install_claude_code || true
-write_claude_starter_files
-write_terminal_guide
+write_claude_starter_files || true
+write_terminal_guide || true
 
 step "Verifying installed commands"
 load_brew_path || true
-ensure_tool_path
+if ! ensure_tool_path; then
+  fail "Tool paths could not be saved to your shell profile."
+  record FAIL "Shell profile PATH"
+fi
 hash -r 2>/dev/null || true
 
 check_command_version git "Git" || true

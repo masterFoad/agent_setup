@@ -74,10 +74,10 @@ def main():
     strip_top = H - 56
     draw.rectangle([(0, strip_top), (W, H)], fill=NOTE_BG)
     centered(draw,
-             "Blocked by macOS?  Right-click the icon, choose Open, then Open.",
+             "Before opening, verify the release checksum from your instructor.",
              note, W / 2, strip_top + 10, NOTE_TEXT)
     centered(draw,
-             "(Expected for an unsigned installer — it is safe.)",
+             "Only continue after verifying the release checksum.",
              small, W / 2, strip_top + 32, MUTED)
 
     img.save(out, "PNG")

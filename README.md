@@ -1,154 +1,112 @@
 # FOAD Dev Setup
 
-Beginner-friendly setup scripts for Windows and macOS.
+Beginner-oriented Windows and macOS setup for a supervised FOAD workshop.
 
-Installs:
+Version: **2.1.0**
 
-- Git
-- Node.js + npm
-- Python 3 + pip
-- Google Antigravity IDE
-- Claude Code
-- FOAD starter Claude Code skill/command
-- A desktop terminal-basics guide
+Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a starter Claude command/skill, and a terminal guide.
 
-> Important: no script can create a Claude account for the user. After install, run `claude` and login/register when Claude Code asks.
->
-> Security note: these one-liners download and execute installer scripts. Keep them on HTTPS, only use a domain you control, and show the script contents on the page for transparency.
+## Before interns start
 
-## Download the macOS installer (.dmg)
+Confirm that each intern has:
 
-Latest build, attached to the GitHub Release:
+- 10-25 minutes, reliable internet, and several gigabytes of free disk space;
+- permission to install software (individual package installers may request administrator approval);
+- an eligible Claude subscription, Anthropic Console account, or supported provider;
+- a Google account if the workshop requires Antigravity IDE sign-in.
 
-- **[FOAD-Dev-Setup-macOS.dmg](https://github.com/masterFoad/agent_setup/releases/latest/download/FOAD-Dev-Setup-macOS.dmg)**
+The installers show this checklist and ask for confirmation before making changes. Existing starter files and the Desktop guide are preserved on reruns.
 
-Open the DMG, then double-click **FOAD Dev Setup**. It is **not** signed/notarized yet, so macOS will warn the first time — see [If you hand out the `.dmg` instead](#if-you-hand-out-the-dmg-instead) for the one-time right-click → Open step.
+## Recommended distribution
 
-## Professional installer option
+For interns, use a **versioned, signed release** distributed by the instructor. Verify the published SHA-256 checksum before opening it.
 
-For a more professional download page, this repo also includes packaging templates:
+- Windows releases should be Authenticode signed.
+- macOS releases should be Developer ID signed and notarized.
+- Do not tell interns to bypass SmartScreen or Gatekeeper for an artifact they have not independently verified.
 
-- Windows: build `FOAD-Dev-Setup-Windows.exe` with Inno Setup.
-- macOS: build `FOAD-Dev-Setup-macOS.dmg` with a double-click setup command.
+The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
-See [`packaging/README.md`](packaging/README.md).
+Until signed `v2.1.0` binaries are published, use the pinned source scripts below only in a supervised setup session.
 
----
+## Supervised source installation
 
-## Put this on your website
-
-These commands use the raw files from this GitHub repo.
+These commands pin FOAD's installer to the versioned `v2.1.0` tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
 
 ### Windows
 
-Tell students to open **PowerShell** and paste:
+Open PowerShell:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-windows.ps1 | iex"
+$path = Join-Path $env:TEMP "foad-install-windows.ps1"
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-windows.ps1" -OutFile $path
+powershell -NoProfile -ExecutionPolicy Bypass -File $path
 ```
-
-While it installs Git and Node.js, Windows may show a **User Account Control (UAC)** dialog asking *"Do you want to allow this app to make changes?"* — click **Yes**. If a tool fails with an "access denied" or permission error, tell students to reopen PowerShell with **Run as Administrator** and paste the command again. (The Claude Code install itself does not need Administrator.)
-
-#### If you hand out the `.exe` instead
-
-When students download `FOAD-Dev-Setup-Windows.exe` from a website, Microsoft Defender **SmartScreen** shows a blue *"Windows protected your PC"* box, because the EXE is not signed with a code-signing certificate. Tell students:
-
-1. Click **More info**.
-2. Click **Run anyway**.
-
-This is expected for an unsigned installer and does not mean anything is wrong. To remove the warning entirely, sign the EXE with an Authenticode certificate (see [`packaging/README.md`](packaging/README.md)). For students, the one-line PowerShell command above does not trigger SmartScreen and is the recommended path.
 
 ### macOS
 
-Tell students to open **Terminal** and paste:
+Open Terminal:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-mac.sh)"
+curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-mac.sh -o /tmp/foad-install-mac.sh
+/bin/bash /tmp/foad-install-mac.sh
 ```
 
-macOS may ask for the user password while installing Homebrew. That is normal.
+Never run these commands with `sudo`. Homebrew or individual package installers will request elevation only when needed.
 
-#### If you hand out the `.dmg` instead
+Instructors can compare the downloaded scripts against [`SHA256SUMS`](SHA256SUMS) from the same tag before the session. Signed binary releases must publish checksums generated **after** signing/notarization.
 
-When students download `FOAD-Dev-Setup-macOS.dmg` from a website, macOS quarantines it. Unless the DMG is signed **and** notarized with an Apple Developer ID, double-clicking `FOAD Dev Setup.command` shows a warning like *"Apple could not verify this app is free of malware."* Tell students:
+## After installation
 
-1. **Right-click** (or Control-click) `FOAD Dev Setup.command` → **Open** → **Open** again.
-2. If macOS still refuses, go to  **Apple menu → System Settings → Privacy & Security**, scroll down, and click **Open Anyway**, then reopen the file.
+1. Close and reopen PowerShell or Terminal.
+2. Run `claude` and follow the login instructions.
+3. Open Google Antigravity IDE.
+4. Read `FOAD-terminal-basics.txt` on the Desktop.
 
-This warning is expected for an unsigned installer and does not mean anything is wrong. To remove it entirely, sign and notarize the DMG (see [`packaging/README.md`](packaging/README.md)). For students, the one-line Terminal command above avoids Gatekeeper completely and is the recommended path.
+Verify with:
 
----
-
-## Local testing before uploading
-
-From this folder:
-
-### Windows PowerShell
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
-```
-
-### macOS Terminal
-
-```bash
-chmod +x ./install-mac.sh
-./install-mac.sh
-```
-
----
-
-## What users should do after install
-
-1. Close and reopen PowerShell/Terminal.
-2. Run:
-
-   ```bash
-   claude
-   ```
-
-3. Login/register when Claude Code asks. Inside Claude Code they can type:
-
-   ```text
-   /login
-   ```
-
-4. Open **Google Antigravity IDE**:
-   - Windows: Start Menu
-   - macOS: Applications
-5. Read `FOAD-terminal-basics.txt` on the Desktop.
-
----
-
-## Verification commands
-
-Users can run:
-
-```bash
+```text
 git --version
 node --version
 npm --version
+python --version     # Windows
+python3 --version    # macOS
 claude --version
 ```
 
-If one command is missing, close and reopen the terminal, then rerun the setup command. The scripts are designed to be safe to rerun.
+If setup is incomplete, follow the final summary and rerun it. Existing workshop files are preserved, but the setup is not a general-purpose rollback or uninstaller for third-party packages.
 
----
+## Troubleshooting
 
-## Troubleshooting (Windows)
+### Windows
 
-- **`claude` says "command not found" inside the Antigravity terminal, and Windows asks to install WSL.** The Antigravity terminal opened a **WSL/Linux** shell. Claude Code was installed for native Windows, so it runs in **PowerShell**, not WSL. In Antigravity's terminal panel, click the dropdown arrow next to the `+` and choose **PowerShell** (or Command Prompt / Git Bash), then run `claude`. Do not install WSL for this.
-- **Install looks frozen, especially on "Installing Google Antigravity IDE".** It is downloading a large app silently. winget often shows no percentage; wait several minutes. It is only truly stuck if there is no network/disk activity for a long time.
-- **Verification step prints `[WARN] ... exit code -1` but shows a correct version.** This was a cosmetic bug (the version check stopped the command early). Fixed — the tools were working fine. Re-pull `main` / rebuild the `.exe` to get the fix.
+- Send `FOAD-setup-log.txt` from the Desktop to the instructor.
+- If `claude` is missing only inside Antigravity, choose a **PowerShell** terminal profile rather than WSL/Ubuntu.
+- Large WinGet downloads can appear idle; check for a hidden UAC prompt in the taskbar.
+- The WinGet registration/Store recovery path needs validation on a clean Windows VM before each workshop.
 
----
+### macOS
 
-## Notes for FOAD
+- Copy the complete failing step and its preceding output for the instructor.
+- Password prompts display no characters while typing.
+- The full setup requires macOS 14 or newer to match Homebrew's supported baseline.
 
-- Windows uses WinGet for Git, Node.js LTS, and Google Antigravity IDE.
-- If WinGet (App Installer) is missing, the Windows script tries to install it automatically from the official `microsoft/winget-cli` GitHub release, and falls back to the Microsoft Store. After a fresh WinGet install, students may need to reopen PowerShell once and rerun the command. (This auto-bootstrap path is untested on real Windows — smoke-test it before relying on it.)
-- macOS uses Homebrew for Git, Node.js, and Google Antigravity IDE.
-- The starter Claude files are only created if missing, so reruns do not overwrite student edits.
-- Claude Code uses Anthropic's native installer first, then falls back to npm if needed.
-- Antigravity IDE install can change if Google changes package IDs. The scripts open the official download page if package-manager install fails.
-- Keep these scripts served over HTTPS only.
+## Building release artifacts
+
+See [`packaging/README.md`](packaging/README.md). Release builders require:
+
+- a clean working tree;
+- `HEAD` tagged exactly as `v$(cat VERSION)`;
+- matching script/package versions.
+
+Builders emit a `.sha256` file beside each artifact. `FOAD_ALLOW_UNTAGGED_BUILD=1` is available only for local test builds.
+
+## Maintainer policy
+
+- Never move a published version tag or replace an existing release asset.
+- Record the source commit and checksums in release notes.
+- Test Windows with a standard user plus separate administrator credentials.
+- Test macOS on both Apple Silicon and Intel where supported.
+- Run the validation workflow and verify failure/recovery paths before distribution.
+
+Current upstream references: [Claude Code setup](https://code.claude.com/docs/en/setup), [Claude Code authentication](https://code.claude.com/docs/en/authentication), [Homebrew installation](https://docs.brew.sh/Installation), [Homebrew support tiers](https://docs.brew.sh/Support-Tiers), [Microsoft WinGet](https://learn.microsoft.com/windows/package-manager/winget/), and [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).

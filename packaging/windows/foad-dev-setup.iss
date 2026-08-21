@@ -6,7 +6,9 @@
 ; Git, Node.js/npm, Google Antigravity IDE, Claude Code, and starter files.
 
 #define MyAppName "FOAD Dev Setup"
-#define MyAppVersion "1.0.0"
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0-dev"
+#endif
 #define MyAppPublisher "FOAD"
 #define MyAppURL "https://github.com/masterFoad/agent_setup"
 
@@ -21,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\FOAD Dev Setup
 DisableDirPage=yes
 DisableProgramGroupPage=yes
-PrivilegesRequired=admin
+PrivilegesRequired=lowest
 OutputDir=..\..\dist\windows
 OutputBaseFilename=FOAD-Dev-Setup-Windows
 Compression=lzma2
@@ -37,17 +39,41 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "..\..\install-windows.ps1"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "..\..\README.md"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
-[Run]
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{tmp}\install-windows.ps1"""; StatusMsg: "Installing FOAD development tools..."; Flags: waituntilterminated
-
 [Code]
 function InitializeSetup(): Boolean;
 begin
   MsgBox(
-    'FOAD Dev Setup will install Git, Node.js/npm, Google Antigravity IDE, Claude Code, and beginner setup files.' + #13#10#13#10 +
-    'Windows may ask for permission during installation. After setup, close and reopen PowerShell, then run: claude',
+    'FOAD Dev Setup will install Git, Node.js/npm, Python, Google Antigravity IDE, Claude Code, and beginner setup files.' + #13#10#13#10 +
+    'Allow 10-25 minutes and several gigabytes of disk space.' + #13#10 +
+    'Individual package installers may request administrator permission.' + #13#10 +
+    'Claude Code requires an eligible subscription, Console account, or supported provider.' + #13#10 +
+    'Antigravity IDE sign-in may require a Google account.' + #13#10 +
+    'The setup creates files under your .claude folder and Desktop and saves a setup log.' + #13#10#13#10 +
+    'After setup, close and reopen PowerShell, then run: claude',
     mbInformation,
     MB_OK
   );
   Result := True;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: Integer;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    if not Exec(
+      ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+      '-NoProfile -ExecutionPolicy Bypass -File "' +
+        ExpandConstant('{tmp}\install-windows.ps1') + '" -AssumeYes',
+      '', SW_SHOW, ewWaitUntilTerminated, ResultCode
+    ) then
+      RaiseException('Could not start the FOAD PowerShell setup.');
+
+    if ResultCode <> 0 then
+      RaiseException(
+        'FOAD setup did not complete. Review FOAD-setup-log.txt on your Desktop, ' +
+        'fix the reported item, and run the installer again.'
+      );
+  end;
 end;

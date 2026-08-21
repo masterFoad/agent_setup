@@ -1,0 +1,59 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: bash -n install-mac.sh packaging/macos/build-mac-dmg.sh packaging/macos/FOAD-Dev-Setup.command.template
+      - name: ShellCheck
+        run: shellcheck install-mac.sh packaging/macos/build-mac-dmg.sh packaging/macos/FOAD-Dev-Setup.command.template
+      - name: Python checks
+        run: |
+          python3 -m py_compile packaging/macos/make-background.py
+          python3 -m unittest discover -s tests -v
+      - name: Git whitespace
+        run: git diff --check "$(git hash-object -t tree /dev/null)" HEAD
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell scripts
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) {
+              $errors | ForEach-Object { Write-Error "$($_.Extent.File):$($_.Extent.StartLineNumber): $($_.Message)" }
+              $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }
+      - name: Release contract tests
+        run: python -m unittest discover -s tests -v
+      - name: Compile Windows preview package
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $env:FOAD_ALLOW_UNTAGGED_BUILD = "1"
+          .\packaging\windows\build-windows-exe.ps1
+          if (-not (Test-Path .\dist\windows\FOAD-Dev-Setup-Windows.exe.sha256)) { exit 1 }
+
+  macos-package:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and verify macOS preview package
+        run: |
+          FOAD_ALLOW_UNTAGGED_BUILD=1 ./packaging/macos/build-mac-dmg.sh
+          cd dist/macos
+          shasum -a 256 -c FOAD-Dev-Setup-macOS.dmg.sha256

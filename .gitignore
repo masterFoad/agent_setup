@@ -15,3 +15,7 @@ temp/
 
 # Build outputs
 dist/
+
+# Python cache
+__pycache__/
+*.pyc

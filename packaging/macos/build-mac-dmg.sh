@@ -22,6 +22,25 @@ STAGE_DIR="$OUT_DIR/dmg-root"
 RW_DMG="$OUT_DIR/FOAD-Dev-Setup-rw.dmg"
 DMG_PATH="$OUT_DIR/FOAD-Dev-Setup-macOS.dmg"
 VOLNAME="FOAD Dev Setup"
+VERSION="$(cat "$ROOT_DIR/VERSION")"
+
+if [[ "${FOAD_ALLOW_UNTAGGED_BUILD:-0}" != "1" ]]; then
+  if [[ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]]; then
+    echo "Release builds require a clean Git working tree." >&2
+    exit 1
+  fi
+  TAG="$(git -C "$ROOT_DIR" describe --exact-match --tags HEAD 2>/dev/null || true)"
+  if [[ "$TAG" != "v$VERSION" ]]; then
+    echo "Release builds require HEAD to be tagged v$VERSION." >&2
+    echo "Set FOAD_ALLOW_UNTAGGED_BUILD=1 only for local test builds." >&2
+    exit 1
+  fi
+fi
+
+if ! grep -Fq "SCRIPT_VERSION=\"$VERSION\"" "$ROOT_DIR/install-mac.sh"; then
+  echo "VERSION and install-mac.sh disagree." >&2
+  exit 1
+fi
 
 if ! command -v hdiutil >/dev/null 2>&1; then
   echo "hdiutil is required. Run this on macOS." >&2
@@ -110,5 +129,8 @@ hdiutil convert "$RW_DMG" -format UDZO -imagekey zlib-level=9 -ov -o "$DMG_PATH"
 rm -f "$RW_DMG"
 rm -rf "$STAGE_DIR"
 
+shasum -a 256 "$DMG_PATH" | awk '{print $1 "  FOAD-Dev-Setup-macOS.dmg"}' > "$DMG_PATH.sha256"
+
 echo "Built: $DMG_PATH"
-echo "Recommended production step: sign and notarize the DMG with an Apple Developer ID."
+echo "Checksum: $DMG_PATH.sha256"
+echo "Production: sign/notarize the DMG, then regenerate this checksum before publishing."

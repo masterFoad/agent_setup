@@ -1,9 +1,14 @@
+param(
+    [switch]$AssumeYes
+)
+
 <#
 FOAD Dev Setup - Windows  (workshop edition, written for absolute beginners)
 Installs: Git, Node.js LTS/npm, Google Antigravity IDE, Python 3, Claude Code, and beginner Claude Code skill files.
-Run from PowerShell. Safe to re-run.
-Website command:
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/masterFoad/agent_setup/main/install-windows.ps1 | iex"
+Run from PowerShell. Reruns preserve existing workshop files.
+Pinned workshop source:
+Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File $env:TEMP\foad-install-windows.ps1
 
 Last verified against official sources: 2026-07-07
 - Claude Code native installer:  https://code.claude.com/docs/en/setup  (irm https://claude.ai/install.ps1 | iex)
@@ -20,6 +25,7 @@ Instructor notes:
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
+$script:InstallerVersion = "2.1.0"
 
 # ---------------------------------------------------------------------------
 # Output helpers, progress counter, run summary
@@ -67,7 +73,7 @@ function Show-Summary {
         $item = $script:Summary[$key]
         switch ($item.Status) {
             "OK"   { Write-Host ("  [ OK ]  " + $key) -ForegroundColor Green }
-            "WARN" { Write-Host ("  [FIX ]  " + $key) -ForegroundColor Yellow; $anyBad = $true }
+            "WARN" { Write-Host ("  [WARN]  " + $key) -ForegroundColor Yellow; $anyBad = $true }
             default { Write-Host ("  [FAIL]  " + $key) -ForegroundColor Red; $anyBad = $true }
         }
         if ($item.Status -ne "OK" -and $item.Hint) {
@@ -83,13 +89,17 @@ function Show-Summary {
         Write-Host "    2. Open a NEW PowerShell window." -ForegroundColor White
         Write-Host "    3. Paste the same setup command from the website and press Enter." -ForegroundColor White
         Write-Host ""
-        Warn "Re-running is 100% safe. Anything already installed is skipped automatically."
+        Warn "Re-running is designed to preserve existing workshop files and skip detected packages."
     } else {
         Ok "Everything installed and verified. You are ready for the workshop!"
     }
     Write-Host ""
-    Write-Host "A full log of this setup was saved to your Desktop: FOAD-setup-log.txt" -ForegroundColor Gray
-    Write-Host "If you get stuck, send that file to your instructor." -ForegroundColor Gray
+    if ($script:TranscriptStarted) {
+        Write-Host "A full log of this setup was saved to your Desktop: FOAD-setup-log.txt" -ForegroundColor Gray
+        Write-Host "If you get stuck, send that file to your instructor." -ForegroundColor Gray
+    } else {
+        Warn "The setup log could not be created. Copy the visible error output for your instructor."
+    }
 }
 
 # ---------------------------------------------------------------------------
@@ -250,18 +260,26 @@ function Install-ClaudeCodeNative {
     # trust the installer's own success message - the real test is the
     # Check-CommandVersion "claude" step in the verification phase below.
     try {
-        Invoke-RestMethod -Uri "https://claude.ai/install.ps1" -UseBasicParsing | Invoke-Expression
+        $installer = Invoke-RestMethod -Uri "https://claude.ai/install.ps1" -UseBasicParsing
+        Invoke-Expression $installer
         Refresh-PathForCurrentSession
-        Ok "Claude Code installer finished. (We double-check it for real in the final verification step.)"
-        return $true
+        if (Check-CommandVersion "claude") {
+            Ok "Claude Code installed and verified with the native installer."
+            return $true
+        }
+        throw "The native installer finished, but claude --version did not succeed."
     } catch {
         Warn "Claude Code native installer failed: $($_.Exception.Message)"
         Warn "Trying plan B: npm install -g @anthropic-ai/claude-code"
         try {
             npm install -g @anthropic-ai/claude-code
+            if ($LASTEXITCODE -ne 0) { throw "npm exited with code $LASTEXITCODE" }
             Refresh-PathForCurrentSession
-            Ok "Claude Code installed with the npm fallback."
-            return $true
+            if (Check-CommandVersion "claude") {
+                Ok "Claude Code installed and verified with the npm fallback."
+                return $true
+            }
+            throw "npm completed, but claude --version did not succeed."
         } catch {
             Warn "The npm fallback also failed: $($_.Exception.Message)"
             Warn "After setup, install manually from: https://code.claude.com/docs/en/setup"
@@ -328,6 +346,11 @@ function Write-TerminalGuide {
 
     $guidePath = Join-Path (Get-DesktopPath) "FOAD-terminal-basics.txt"
     $isNew = -not (Test-Path $guidePath)
+
+    if (-not $isNew) {
+        Ok "Keeping existing guide: $guidePath"
+        return $null
+    }
 
 @'
 FOAD Terminal Basics - Windows
@@ -432,7 +455,7 @@ function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version
         $output = & $cmd.Source $VersionArg 2>&1
         $code = $LASTEXITCODE
         $result = ($output | Select-Object -First 1)
-        if ($code -eq 0 -or $result -match '\d+\.\d+') {
+        if ($code -eq 0 -and $result -match '\d+\.\d+') {
             Ok "$Command works: $result"
             return $true
         }
@@ -461,75 +484,34 @@ function Check-PythonVersion {
 # ---------------------------------------------------------------------------
 
 function Ensure-Winget {
-    # Returns $true if winget is usable in THIS session. If winget is missing,
-    # tries to install App Installer (Microsoft.DesktopAppInstaller) from the
-    # official microsoft/winget-cli GitHub release, then falls back to the
-    # Microsoft Store. UNTESTED on real Windows from this repo's CI — smoke-test
-    # on a Windows box before relying on the auto-bootstrap path.
+    # Returns $true if winget is usable in THIS session. If App Installer is
+    # present but not registered for this user, use Microsoft's documented
+    # registration command. Otherwise open the official Store listing.
     Step "Checking WinGet (the Windows app installer this script uses)"
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Ok "WinGet found."
         return $true
     }
 
-    Warn "WinGet is not installed. Trying to install 'App Installer' automatically..."
-    Warn "If this fails, the Microsoft Store will open as a fallback."
+    Warn "WinGet is not active. Trying to register Microsoft's App Installer for this account..."
 
     try {
-        switch ($env:PROCESSOR_ARCHITECTURE) {
-            "AMD64" { $depArch = "x64" }
-            "ARM64" { $depArch = "arm64" }
-            "x86"   { $depArch = "x86" }
-            default { $depArch = "x64" }
-        }
-
-        $tmp = Join-Path $env:TEMP "foad-winget"
-        New-Item -ItemType Directory -Force -Path $tmp | Out-Null
-
-        $release = Invoke-RestMethod -UseBasicParsing `
-            -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" `
-            -Headers @{ "User-Agent" = "foad-dev-setup" }
-
-        $bundle = $release.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -First 1
-        $deps   = $release.assets | Where-Object { $_.name -like "*Dependencies.zip" } | Select-Object -First 1
-        if (-not $bundle) { throw "Could not find the App Installer .msixbundle in the latest release." }
-
-        # Install dependencies (VCLibs, UI.Xaml, WindowsAppRuntime) for this
-        # architecture first, if shipped. The dependencies zip can contain both
-        # .appx and .msix files, so accept both extensions.
-        if ($deps) {
-            $depsZip = Join-Path $tmp $deps.name
-            Invoke-WebRequest -UseBasicParsing -Uri $deps.browser_download_url -OutFile $depsZip
-            $depsDir = Join-Path $tmp "deps"
-            Expand-Archive -Path $depsZip -DestinationPath $depsDir -Force
-            $archDir = Join-Path $depsDir $depArch
-            if (Test-Path $archDir) {
-                Get-ChildItem -Path $archDir -File -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Extension -in ".appx", ".msix" } |
-                    ForEach-Object {
-                        try { Add-AppxPackage -Path $_.FullName -ErrorAction Stop }
-                        catch { Warn "Dependency $($_.Name) may already be present: $($_.Exception.Message)" }
-                    }
-            }
-        }
-
-        $bundlePath = Join-Path $tmp $bundle.name
-        Invoke-WebRequest -UseBasicParsing -Uri $bundle.browser_download_url -OutFile $bundlePath
-        Add-AppxPackage -Path $bundlePath -ErrorAction Stop
+        Add-AppxPackage -RegisterByFamilyName `
+            -MainPackage "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" `
+            -ErrorAction Stop
 
         Refresh-PathForCurrentSession
         if (Get-Command winget -ErrorAction SilentlyContinue) {
-            Ok "WinGet installed automatically."
+            Ok "WinGet registered successfully."
             return $true
         }
 
-        # Installed, but the app-execution alias is not live in this session yet.
-        Warn "App Installer was installed, but 'winget' is not active in this PowerShell session yet."
-        Warn "Close PowerShell, open it again, and paste the setup command once more. It is safe to re-run."
+        Warn "App Installer was registered, but 'winget' is not active in this PowerShell session yet."
+        Warn "Close PowerShell, open it again, and paste the setup command once more. Existing workshop files are preserved."
         return $false
     } catch {
-        Warn "Automatic WinGet install failed: $($_.Exception.Message)"
-        FailMsg "Install 'App Installer' from the Microsoft Store (opening now), then run this script again."
+        Warn "App Installer registration was unavailable: $($_.Exception.Message)"
+        FailMsg "Install or update 'App Installer' from the Microsoft Store (opening now), then rerun setup."
         Start-Process "ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1" | Out-Null
         return $false
     }
@@ -555,18 +537,35 @@ function Finish([int]$ExitCode) {
     exit $ExitCode
 }
 
+$script:HandlingUnexpectedError = $false
+trap {
+    if ($script:HandlingUnexpectedError) { exit 1 }
+    $script:HandlingUnexpectedError = $true
+    FailMsg "Unexpected setup error: $($_.Exception.Message)"
+    Record "Unexpected setup error" "FAIL" "Copy this error and the preceding output for your instructor, then rerun setup."
+    Show-Summary
+    Finish 1
+}
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 # Log everything to the Desktop so students can send the instructor one file.
 $script:LogPath = Join-Path (Get-DesktopPath) "FOAD-setup-log.txt"
-try { Start-Transcript -Path $script:LogPath -Append | Out-Null } catch { }
+$script:TranscriptStarted = $false
+try {
+    Start-Transcript -Path $script:LogPath -Append | Out-Null
+    $script:TranscriptStarted = $true
+} catch {
+    Warn "Could not start the Desktop setup log: $($_.Exception.Message)"
+}
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "        FOAD DEV SETUP - Claude Code Workshop             " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "Installer version: $($script:InstallerVersion)" -ForegroundColor Gray
 Write-Host ""
 Write-Host "This will install everything you need:" -ForegroundColor White
 Write-Host "  - Git              (saves versions of your code)"
@@ -583,7 +582,22 @@ Write-Host "  2. If Windows asks 'Do you want to allow this app to make changes?
 Write-Host "     click YES. (The box sometimes hides in the taskbar - check there.)" -ForegroundColor White
 Write-Host ""
 Write-Host "If anything goes wrong: close PowerShell, open it again, and paste the" -ForegroundColor Yellow
-Write-Host "same command from the website. Re-running is always safe." -ForegroundColor Yellow
+Write-Host "same command from the website. Existing workshop files are preserved." -ForegroundColor Yellow
+
+if (-not $AssumeYes) {
+    Write-Host ""
+    Write-Host "Before continuing:" -ForegroundColor Cyan
+    Write-Host "  - Allow 10-25 minutes and several gigabytes of free disk space."
+    Write-Host "  - Windows may request administrator approval for individual packages."
+    Write-Host "  - Claude Code needs an eligible Claude subscription, Console account, or supported provider."
+    Write-Host "  - Antigravity IDE sign-in may require a Google account."
+    Write-Host "  - This setup creates files under .claude and on your Desktop and saves a setup log."
+    $consent = Read-Host "Press ENTER to continue, or type Q to cancel"
+    if ($consent -match '^[Qq]$') {
+        Write-Host "Setup cancelled. No installation steps were started."
+        Finish 0
+    }
+}
 
 Phase "Checking your computer" "Making sure Windows and your internet connection are ready."
 if (-not (Test-WindowsVersionOk)) { Record "Windows version" "FAIL" "Update Windows, then run this setup again."; Show-Summary; Finish 1 }
@@ -600,44 +614,67 @@ Record "WinGet" "OK"
 try { winget source update | Out-Null } catch { Warn "winget source update failed, continuing anyway." }
 
 Phase "Installing Git" "Git tracks changes in your code, like unlimited undo with history."
-$gitOk = Install-WingetPackage -Id "Git.Git" -Name "Git" -Required
-Record "Git" $(if ($gitOk) { "OK" } else { "FAIL" }) "Reopen PowerShell as Administrator and run the setup command again."
+try { $gitOk = Install-WingetPackage -Id "Git.Git" -Name "Git" -Required }
+catch {
+    FailMsg $_.Exception.Message
+    Record "Git" "FAIL" "Check internet/UAC access, then rerun the setup."
+    Show-Summary
+    Finish 1
+}
+Record "Git" $(if ($gitOk) { "OK" } else { "FAIL" }) "Check the error above and rerun setup; the package installer will request elevation if needed."
 
 Phase "Installing Node.js + npm" "Node.js runs JavaScript on your computer; npm installs JavaScript packages."
-$nodeOk = Install-WingetPackage -Id "OpenJS.NodeJS.LTS" -Name "Node.js LTS + npm" -Required
-Record "Node.js + npm" $(if ($nodeOk) { "OK" } else { "FAIL" }) "Reopen PowerShell as Administrator and run the setup command again."
+try { $nodeOk = Install-WingetPackage -Id "OpenJS.NodeJS.LTS" -Name "Node.js LTS + npm" -Required }
+catch {
+    FailMsg $_.Exception.Message
+    Record "Node.js + npm" "FAIL" "Check internet/UAC access, then rerun the setup."
+    Show-Summary
+    Finish 1
+}
+Record "Node.js + npm" $(if ($nodeOk) { "OK" } else { "FAIL" }) "Check the error above and rerun setup; the package installer will request elevation if needed."
 Refresh-PathForCurrentSession
 
 Phase "Installing Antigravity IDE" "The code editor we use in the workshop. THIS IS THE BIG ONE - it may look frozen while downloading. It is not. Please wait."
 # Google.AntigravityIDE = the full IDE (what we want).
 # Google.Antigravity    = a DIFFERENT app since 2026 (agent orchestrator, no editor). Do NOT add it here.
 $agOk = Install-FirstAvailableWingetPackage -Ids @("Google.AntigravityIDE") -Name "Google Antigravity IDE" -FallbackUrl "https://antigravity.google/download"
-Record "Antigravity IDE" $(if ($agOk) { "OK" } else { "WARN" }) "The download page opened in your browser - scroll to 'Antigravity IDE', download it, and run the installer."
+Record "Antigravity IDE" $(if ($agOk) { "OK" } else { "FAIL" }) "The download page opened in your browser - install Antigravity IDE, then rerun this setup."
 
 Phase "Installing Python 3 + pip" "Python runs many scripts and tools that Claude Code will write for you."
 # Pin to current minor versions, NEWEST FIRST (3.14 is the current stable line);
 # winget IDs are version-specific.
 $pyOk = Install-FirstAvailableWingetPackage -Ids @("Python.Python.3.14", "Python.Python.3.13", "Python.Python.3.12") -Name "Python 3 + pip" -FallbackUrl "https://www.python.org/downloads/windows/"
-Record "Python 3 + pip" $(if ($pyOk) { "OK" } else { "WARN" }) "The Python download page opened - download the latest Windows installer and run it (tick 'Add python.exe to PATH')."
+Record "Python 3 + pip" $(if ($pyOk) { "OK" } else { "FAIL" }) "The Python download page opened - install Python and select 'Add python.exe to PATH', then rerun."
 Refresh-PathForCurrentSession
 
 Phase "Installing Claude Code" "The AI coding assistant - the star of this workshop."
 $ccOk = Install-ClaudeCodeNative
-Record "Claude Code" $(if ($ccOk) { "OK" } else { "WARN" }) "Close PowerShell, reopen it, run the setup command again. Manual install: https://code.claude.com/docs/en/setup"
+Record "Claude Code" $(if ($ccOk) { "OK" } else { "FAIL" }) "Close PowerShell, reopen it, run the setup command again. Manual install: https://code.claude.com/docs/en/setup"
 
 Phase "Creating workshop files" "A starter Claude skill, a starter command, and a cheat-sheet on your Desktop."
-Write-ClaudeStarterFiles
-Record "Claude starter files" "OK"
-$newGuidePath = Write-TerminalGuide
-Record "Desktop cheat-sheet" "OK"
+try {
+    Write-ClaudeStarterFiles
+    Record "Claude starter files" "OK"
+} catch {
+    FailMsg "Could not create Claude starter files: $($_.Exception.Message)"
+    Record "Claude starter files" "FAIL" "Check access to your .claude folder, then rerun setup."
+}
+try {
+    $newGuidePath = Write-TerminalGuide
+    Record "Desktop cheat-sheet" "OK"
+} catch {
+    FailMsg "Could not create the Desktop cheat-sheet: $($_.Exception.Message)"
+    Record "Desktop cheat-sheet" "FAIL" "Check access to your Desktop folder, then rerun setup."
+    $newGuidePath = $null
+}
 
 Phase "Final check" "Testing that every tool actually answers when called."
-Record "git works"    $(if (Check-CommandVersion "git")    { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: git --version"
-Record "node works"   $(if (Check-CommandVersion "node")   { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: node --version"
-Record "npm works"    $(if (Check-CommandVersion "npm")    { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: npm --version"
-Record "python works" $(if (Check-PythonVersion)           { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: python --version (or: py --version)"
-Record "pip works"    $(if (Check-CommandVersion "pip")    { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: pip --version"
-Record "claude works" $(if (Check-CommandVersion "claude") { "OK" } else { "WARN" }) "Close PowerShell, open a new one, type: claude --version. If still missing, run the setup command again."
+Record "git works"    $(if (Check-CommandVersion "git")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: git --version"
+Record "node works"   $(if (Check-CommandVersion "node")   { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: node --version"
+Record "npm works"    $(if (Check-CommandVersion "npm")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: npm --version"
+Record "python works" $(if (Check-PythonVersion)           { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: python --version (or: py --version)"
+Record "pip works"    $(if (Check-CommandVersion "pip")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: pip --version"
+Record "claude works" $(if (Check-CommandVersion "claude") { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: claude --version. If still missing, run the setup command again."
 
 Show-Summary
 
@@ -661,5 +698,11 @@ if ($newGuidePath) {
     try { Start-Process notepad.exe $newGuidePath | Out-Null } catch { }
 }
 
-Ok "FOAD setup finished. If anything shows [FIX] above, follow its 'how to fix' line - usually just restart PowerShell and re-run. Re-running is always safe."
+$hasFailure = $script:Summary.Values | Where-Object { $_.Status -eq "FAIL" } | Select-Object -First 1
+if ($hasFailure) {
+    FailMsg "FOAD setup is incomplete. Follow the 'how to fix' lines above, then rerun."
+    Finish 1
+}
+
+Ok "FOAD setup finished. Review any [WARN] items above before the workshop."
 Finish 0
