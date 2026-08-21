@@ -2,7 +2,7 @@
 
 Beginner-oriented Windows and macOS setup for a supervised FOAD workshop.
 
-Version: **2.1.0**
+Version: **2.1.1**
 
 Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a starter Claude command/skill, and a terminal guide.
 
@@ -27,11 +27,11 @@ For interns, use a **versioned, signed release** distributed by the instructor. 
 
 The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
-Until signed `v2.1.0` binaries are published, use the pinned source scripts below only in a supervised setup session.
+Until signed `v2.1.1` binaries are published, use the pinned source scripts below only in a supervised setup session.
 
 ## Supervised source installation
 
-These commands pin FOAD's installer to the versioned `v2.1.0` tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
+These commands pin FOAD's installer to the versioned `v2.1.1` tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
 
 ### Windows
 
@@ -39,7 +39,7 @@ Open PowerShell:
 
 ```powershell
 $path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path
 ```
 
@@ -48,7 +48,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $path
 Open Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-mac.sh -o /tmp/foad-install-mac.sh
+curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh
 ```
 

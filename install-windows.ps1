@@ -7,7 +7,7 @@ FOAD Dev Setup - Windows  (workshop edition, written for absolute beginners)
 Installs: Git, Node.js LTS/npm, Google Antigravity IDE, Python 3, Claude Code, and beginner Claude Code skill files.
 Run from PowerShell. Reruns preserve existing workshop files.
 Pinned workshop source:
-Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.0/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
+Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File $env:TEMP\foad-install-windows.ps1
 
 Last verified against official sources: 2026-07-07
@@ -25,7 +25,7 @@ Instructor notes:
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$script:InstallerVersion = "2.1.0"
+$script:InstallerVersion = "2.1.1"
 
 # ---------------------------------------------------------------------------
 # Output helpers, progress counter, run summary
