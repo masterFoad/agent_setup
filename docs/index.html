@@ -199,6 +199,37 @@
   .lang[lang="ar"] .code-label{font-family:var(--arabic);font-size:13px;letter-spacing:.03em;}
   pre .cmt{color:var(--ink-faint);}
 
+  /* ---------- Copy-to-clipboard ---------- */
+  .codeblock{position:relative;direction:ltr;}
+  .codeblock pre{margin-top:0;}
+  .copy-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--rule-hair);
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:4px 9px;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .12s ease, color .12s ease, border-color .12s ease;
+  }
+  /* Always visible on touch/coarse pointers, where there is no hover. */
+  @media (hover:none){ .copy-btn{opacity:1;} }
+  .codeblock:hover .copy-btn,
+  .codeblock:focus-within .copy-btn{opacity:1;}
+  .copy-btn:hover{color:var(--ink);border-color:var(--ink);}
+  .copy-btn:focus-visible{opacity:1;outline:2px solid var(--ink);outline-offset:2px;}
+  .copy-btn[data-state="done"]{color:var(--ink);border-color:var(--ink);}
+  .copy-btn[data-state="fail"]{color:var(--ink);border-color:var(--ink);}
+  /* The label is Arabic in the Arabic edition, so let it use the Arabic face. */
+  .lang[lang="ar"] .copy-btn{font-family:var(--arabic);font-size:12px;letter-spacing:0;text-transform:none;}
+
   /* ---------- Tables ---------- */
   .tablewrap{overflow-x:auto;margin:18px 0 8px;}
   table{width:100%;border-collapse:collapse;font-size:14.5px;}
@@ -331,7 +362,7 @@
     .part-switch button .part-name{font-size:15px;}
   }
   @media print{
-    .part-switch,.lang-switch{display:none;}
+    .part-switch,.lang-switch,.copy-btn{display:none;}
     .platform-panel{display:block!important;}
   }
 </style>
@@ -1053,6 +1084,70 @@ claude --version</code></pre>
   }
   btnEn.addEventListener('click', function(){ setLang('en'); });
   btnAr.addEventListener('click', function(){ setLang('ar'); });
+
+  /* ----- Copy to clipboard on every command block ----- */
+  var COPY_LABEL = { en: 'Copy',  ar: 'نسخ' };
+  var DONE_LABEL = { en: 'Copied', ar: 'تم النسخ' };
+  var FAIL_LABEL = { en: 'Press Ctrl/Cmd+C', ar: 'اضغط Ctrl/Cmd+C' };
+
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    /* file:// and plain http have no async clipboard - fall back. */
+    return new Promise(function(resolve, reject){
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
+  }
+
+  document.querySelectorAll('pre').forEach(function(pre){
+    var wrap = document.createElement('div');
+    wrap.className = 'codeblock';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+
+    var isAr = !!pre.closest('.lang[lang="ar"]');
+    var lang = isAr ? 'ar' : 'en';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = COPY_LABEL[lang];
+    btn.setAttribute('aria-label', isAr ? 'نسخ الأمر' : 'Copy command');
+    /* The result is announced, so a screen reader hears it without moving focus. */
+    btn.setAttribute('aria-live', 'polite');
+    wrap.appendChild(btn);
+
+    var resetTimer = null;
+    btn.addEventListener('click', function(){
+      /* textContent keeps the newlines of a multi-line block verbatim. */
+      var text = pre.textContent.replace(/\s+$/, '');
+      copyText(text).then(function(){
+        btn.textContent = DONE_LABEL[lang];
+        btn.setAttribute('data-state', 'done');
+      }).catch(function(){
+        btn.textContent = FAIL_LABEL[lang];
+        btn.setAttribute('data-state', 'fail');
+      }).then(function(){
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(function(){
+          btn.textContent = COPY_LABEL[lang];
+          btn.removeAttribute('data-state');
+        }, 1800);
+      });
+    });
+  });
 })();
 </script>
 </body>
