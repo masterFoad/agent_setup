@@ -14,7 +14,9 @@ Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a st
 - [Recommended distribution](#recommended-distribution)
 - [Supervised source installation](#supervised-source-installation)
 - [macOS — step by step](#macos--step-by-step)
+  - [macOS — worst case: install everything by hand](#macos--worst-case-install-everything-by-hand)
 - [Windows — step by step](#windows--step-by-step)
+  - [Windows — worst case: install everything by hand](#windows--worst-case-install-everything-by-hand)
 - [After installation](#after-installation)
 - [Troubleshooting](#troubleshooting)
 - [Building release artifacts](#building-release-artifacts)
@@ -113,14 +115,75 @@ Run the [macOS command](#macos) above. The installer then performs these steps i
 | 12 | Create the Desktop guide | Writes `~/Desktop/FOAD-terminal-basics.txt` and opens it in TextEdit at the end. | — |
 | 13 | Verify | Runs `--version` for `git`, `node`, `npm`, `python3`, `pip3`, `claude`, then prints a ✔/⚠/✘ summary and next steps. | — |
 
-Manual equivalents, if an intern needs to install a single piece by hand:
+### macOS — worst case: install everything by hand
+
+If the installer stops partway and rerunning does not get past it, run these
+blocks in Terminal **one at a time, in order**, and check the result of each
+before moving to the next. Nothing here is FOAD-specific: every command is the
+vendor's own documented install. Skip any block whose tool already works.
+
+**1. Homebrew** — skip if `brew --version` already prints a version.
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"   # Homebrew
-brew install git node python
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**2. Put Homebrew on your PATH**, then close and reopen Terminal.
+
+```bash
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile   # Apple Silicon
+echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile      # Intel Macs
+eval "$(brew shellenv)"
+```
+
+**3. Git**
+
+```bash
+brew install git
+```
+
+**4. Node.js + npm**
+
+```bash
+brew install node
+```
+
+**5. Python 3 + pip**
+
+```bash
+brew install python
+```
+
+**6. Antigravity IDE** — if the cask is unavailable, download it from
+<https://antigravity.google/download> instead.
+
+```bash
 brew install --cask antigravity-ide
-curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh              # Claude Code
+```
+
+**7. Claude Code** — Anthropic's official installer. If it fails, try
+`brew install --cask claude-code`, then `npm install -g @anthropic-ai/claude-code`.
+
+```bash
+curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
 /bin/bash /tmp/claude-install.sh
+```
+
+**8. Add the Claude Code paths**, then close and reopen Terminal.
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile
+```
+
+**9. Check everything.** Every line must print a version number.
+
+```bash
+git --version
+node --version
+npm --version
+python3 --version
+pip3 --version
+claude --version
 ```
 
 ---
@@ -150,6 +213,103 @@ Windows-specific notes:
 - Click **Yes** on any "Do you want to allow this app to make changes?" (UAC) prompt. It sometimes hides behind other windows — check the taskbar.
 - The final check deliberately ignores the current session's PATH, so a green summary means the tools really will work in a fresh window. Still open a **new** PowerShell afterwards.
 - The `.claude` directories, the versioned Desktop guide, and the setup log are the only files this script creates.
+
+### Windows — worst case: install everything by hand
+
+If the installer stops partway and rerunning does not get past it, run these
+blocks in **Windows PowerShell** (not WSL) **one at a time, in order**, and
+check the result of each before moving to the next. Nothing here is
+FOAD-specific: every command is the vendor's own documented install. Skip any
+block whose tool already works. Answer **Yes** to any UAC prompt — it sometimes
+hides behind other windows.
+
+**1. WinGet** — skip if `winget --version` already prints a version. Otherwise
+install **App Installer** from <https://apps.microsoft.com/detail/9nblggh4nns1>
+and reopen PowerShell.
+
+```powershell
+winget --version
+```
+
+**2. Git**
+
+```powershell
+winget install --id Git.Git --exact --source winget --accept-package-agreements --accept-source-agreements
+```
+
+**3. Node.js + npm**
+
+```powershell
+winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements
+```
+
+**4. Antigravity IDE** — the big one; it can look frozen for several minutes.
+Note the `IDE` suffix: `Google.Antigravity` is a different app. Fallback:
+<https://antigravity.google/download>.
+
+```powershell
+winget install --id Google.AntigravityIDE --exact --source winget --accept-package-agreements --accept-source-agreements
+```
+
+**5. Python 3 + pip** — try these in order and stop at the first that succeeds.
+Fallback: <https://www.python.org/downloads/windows/>, ticking **"Add python.exe
+to PATH"**.
+
+```powershell
+winget install --id Python.Python.3.14 --exact --source winget --accept-package-agreements --accept-source-agreements
+winget install --id Python.Python.3.13 --exact --source winget --accept-package-agreements --accept-source-agreements
+winget install --id Python.Python.3.12 --exact --source winget --accept-package-agreements --accept-source-agreements
+```
+
+**6. Claude Code** — Anthropic's official installer, downloaded first and then
+run, so you can see what you are about to execute.
+
+```powershell
+$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
+Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
+powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable
+```
+
+If that fails, use the official WinGet package instead:
+
+```powershell
+winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements
+```
+
+**7. Put Claude Code on your PATH permanently** — only if step 9 below says
+`claude` is missing. Adjust the folder if Claude installed elsewhere.
+
+```powershell
+$claudeDir = Join-Path $HOME ".local\bin"
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$claudeDir*") {
+    [Environment]::SetEnvironmentVariable("Path", "$userPath;$claudeDir", "User")
+}
+```
+
+**8. Close PowerShell and open a new one.** PATH changes do not reach the window
+that made them.
+
+**9. Check everything.** Every line must print a version number.
+
+```powershell
+git --version
+node --version
+npm --version
+python --version
+pip --version
+claude --version
+```
+
+**10. Confirm a genuinely new shell can see Claude** — this is the check the
+installer performs, and the one that catches a PATH that was never persisted.
+
+```powershell
+$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$env:Path = "$machinePath;$userPath"
+claude --version
+```
 
 ---
 
