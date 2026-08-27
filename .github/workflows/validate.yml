@@ -50,13 +50,18 @@ jobs:
       - name: Official Claude installer integration test
         shell: powershell
         run: |
-          . .\install-windows.ps1 -LibraryOnly
-          if (-not (Install-ClaudeCodeNative)) { throw "Claude installation did not complete." }
-          if (-not (Get-VerifiedSignedClaudePath)) { throw "Claude Authenticode verification failed." }
-          if (-not (Check-CommandVersion "claude" -PersistentPathOnly)) { throw "Claude is missing from persistent PATH." }
-          $freshCheck = '$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine"); $userPath = [Environment]::GetEnvironmentVariable("Path", "User"); $env:Path = "$machinePath;$userPath"; claude --version'
-          & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command $freshCheck
-          if ($LASTEXITCODE -ne 0) { throw "A fresh Windows PowerShell could not run Claude." }
+          try {
+            . .\install-windows.ps1 -LibraryOnly
+            if (-not (Install-ClaudeCodeNative)) { throw "Claude installation did not complete." }
+            if (-not (Get-VerifiedSignedClaudePath)) { throw "Claude Authenticode verification failed." }
+            if (-not (Check-CommandVersion "claude" -PersistentPathOnly)) { throw "Claude is missing from persistent PATH." }
+            $freshCheck = '$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine"); $userPath = [Environment]::GetEnvironmentVariable("Path", "User"); $env:Path = "$machinePath;$userPath"; claude --version'
+            & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command $freshCheck
+            if ($LASTEXITCODE -ne 0) { throw "A fresh Windows PowerShell could not run Claude." }
+          } catch {
+            Write-Host "::error title=Claude Windows integration::$($_.Exception.Message)"
+            throw
+          }
       - name: Compile Windows preview package
         shell: pwsh
         run: |
