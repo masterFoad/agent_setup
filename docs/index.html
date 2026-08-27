@@ -653,8 +653,7 @@
         <h2>Install Claude Code</h2>
         <p>Copy this, paste it into Terminal, and press Enter. This is the only thing you install by hand.</p>
         <div class="code-label">Terminal</div>
-        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-/bin/bash /tmp/claude-install.sh</code></pre>
+        <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
         <p>When it finishes, close Terminal and open a new window.</p>
       </section>
 
@@ -765,8 +764,7 @@ eval "$(brew shellenv)"</code></pre>
         <pre><code>brew install --cask antigravity-ide</code></pre>
 
         <h3>Claude Code</h3>
-        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-/bin/bash /tmp/claude-install.sh</code></pre>
+        <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
         <p>If that doesn't work: <code class="inline">brew install --cask claude-code</code>, and failing that, <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
 
         <h3>Let your Mac find Claude</h3>
@@ -807,9 +805,7 @@ claude --version</code></pre>
         <h2>Install Claude Code</h2>
         <p>Copy this, paste it into PowerShell, and press Enter. This is the only thing you install by hand.</p>
         <div class="code-label">PowerShell</div>
-        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
-Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
-powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
         <p>When it finishes, close PowerShell and open a new window.</p>
       </section>
 
@@ -924,9 +920,7 @@ winget install --id Python.Python.3.13 --exact --source winget --accept-package-
 winget install --id Python.Python.3.12 --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
         <h3>Claude Code</h3>
-        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
-Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
-powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
         <p>If that fails, try this instead:</p>
         <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
@@ -1013,8 +1007,7 @@ claude --version</code></pre>
         <h2>ثبّت <bdi>Claude Code</bdi></h2>
         <p>انسخ هذا، ألصقه في <bdi>Terminal</bdi>، واضغط Enter. هذا الشيء الوحيد الذي ستثبّته بنفسك.</p>
         <div class="code-label"><bdi>Terminal</bdi></div>
-        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-/bin/bash /tmp/claude-install.sh</code></pre>
+        <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
         <p>عند انتهائه، أغلق <bdi>Terminal</bdi> وافتح نافذة جديدة.</p>
       </section>
 
@@ -1125,8 +1118,7 @@ eval "$(brew shellenv)"</code></pre>
         <pre><code>brew install --cask antigravity-ide</code></pre>
 
         <h3><bdi>Claude Code</bdi></h3>
-        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
-/bin/bash /tmp/claude-install.sh</code></pre>
+        <pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
         <p>إن لم ينجح: <code class="inline">brew install --cask claude-code</code>، وإن فشل أيضًا: <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
 
         <h3>اجعل جهازك يجد <bdi>Claude</bdi></h3>
@@ -1167,9 +1159,7 @@ claude --version</code></pre>
         <h2>ثبّت <bdi>Claude Code</bdi></h2>
         <p>انسخ هذا، ألصقه في <bdi>PowerShell</bdi>، واضغط Enter. هذا الشيء الوحيد الذي ستثبّته بنفسك.</p>
         <div class="code-label"><bdi>PowerShell</bdi></div>
-        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
-Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
-powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
         <p>عند انتهائه، أغلق <bdi>PowerShell</bdi> وافتح نافذة جديدة.</p>
       </section>
 
@@ -1284,9 +1274,7 @@ winget install --id Python.Python.3.13 --exact --source winget --accept-package-
 winget install --id Python.Python.3.12 --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
         <h3><bdi>Claude Code</bdi></h3>
-        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
-Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
-powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
         <p>وإن فشل، جرّب هذا بدلًا منه:</p>
         <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
