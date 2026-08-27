@@ -411,7 +411,10 @@
     margin-bottom:14px;
   }
   .lang[lang="ar"] .chooser h2{font-family:var(--arabic);font-size:17px;letter-spacing:.03em;}
-  .choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  /* The grid stays LTR in both editions so Mac and Windows never swap sides -
+     only the words inside a card follow the reading direction. */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;direction:ltr;}
+  .lang[lang="ar"] .choice{direction:rtl;}
   .choice{
     appearance:none;
     background:var(--paper);
@@ -521,6 +524,24 @@
   .lang[lang="ar"] .foot{font-family:var(--arabic);font-size:13px;letter-spacing:.03em;text-transform:none;}
   .foot a{color:var(--ink-faint);}
 
+  /* ---------- Language crossfade ---------- */
+  .lang{
+    opacity:1;
+    transform:none;
+    transition:opacity .26s ease, transform .26s cubic-bezier(.22,.61,.36,1);
+  }
+  /* Outgoing edition drifts toward its own reading direction as it fades. */
+  .lang.is-leaving{opacity:0;transform:translateX(-14px);}
+  .lang[dir="rtl"].is-leaving{transform:translateX(14px);}
+  /* Incoming edition arrives from the opposite side. */
+  .lang.is-entering{opacity:0;transform:translateX(14px);}
+  .lang[dir="rtl"].is-entering{transform:translateX(-14px);}
+  .lang-switch button{transition:background .22s ease, color .22s ease;}
+  @media (prefers-reduced-motion: reduce){
+    .lang{transition:none;}
+    .lang.is-leaving,.lang.is-entering{opacity:1;transform:none;}
+  }
+
   /* ---------- Bidi safety ---------- */
   /* Latin tool names inside Arabic headings/prose reorder without isolation. */
   bdi{unicode-bidi:isolate;}
@@ -535,7 +556,7 @@
     <button id="btn-ar" aria-pressed="false" lang="ar"><span class="ar-label">العربية</span></button>
   </nav>
 
-<div class="lang" id="lang-en" lang="en">
+<div class="lang" id="lang-en" lang="en" dir="ltr">
 
   <header class="hero">
     <div class="kicker">Claude Code Workshop</div>
@@ -1101,15 +1122,59 @@ claude --version</code></pre>
   var wrapEn = document.getElementById('lang-en');
   var wrapAr = document.getElementById('lang-ar');
 
-  function setLang(lang){
-    var isAr = lang === 'ar';
-    wrapEn.hidden = isAr;
-    wrapAr.hidden = !isAr;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var switching = false;
+  /* A click landing mid-animation is remembered, not dropped, so an impatient
+     double-tap still ends on the language the reader asked for last. */
+  var queued = null;
+
+  function applyLang(isAr){
     btnEn.setAttribute('aria-pressed', String(!isAr));
     btnAr.setAttribute('aria-pressed', String(isAr));
     document.documentElement.lang = isAr ? 'ar' : 'en';
     document.documentElement.dir = isAr ? 'rtl' : 'ltr';
-    window.scrollTo(0, 0);
+  }
+
+  function setLang(lang){
+    var isAr = lang === 'ar';
+    var outgoing = isAr ? wrapEn : wrapAr;
+    var incoming = isAr ? wrapAr : wrapEn;
+    if(switching){ queued = lang; return; }
+    if(!incoming.hidden){ queued = null; return; }
+
+    if(reduceMotion){
+      outgoing.hidden = true;
+      incoming.hidden = false;
+      applyLang(isAr);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    switching = true;
+    outgoing.classList.add('is-leaving');
+
+    setTimeout(function(){
+      outgoing.hidden = true;
+      outgoing.classList.remove('is-leaving');
+
+      incoming.classList.add('is-entering');
+      incoming.hidden = false;
+      applyLang(isAr);
+      window.scrollTo(0, 0);
+
+      /* Read layout once so the browser paints the entering state before it is
+         removed - otherwise the two class changes collapse into no animation. */
+      void incoming.offsetHeight;
+      requestAnimationFrame(function(){
+        incoming.classList.remove('is-entering');
+        setTimeout(function(){
+          switching = false;
+          var next = queued;
+          queued = null;
+          if(next && next !== (isAr ? 'ar' : 'en')) setLang(next);
+        }, 260);
+      });
+    }, 260);
   }
   btnEn.addEventListener('click', function(){ setLang('en'); });
   btnAr.addEventListener('click', function(){ setLang('ar'); });
