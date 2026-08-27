@@ -2,7 +2,7 @@
 
 Beginner-oriented Windows and macOS setup for a supervised FOAD workshop.
 
-Version: **2.1.2**
+Version: **2.1.3**
 
 Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a starter Claude command/skill, and a terminal guide.
 
@@ -44,11 +44,11 @@ For interns, use a **versioned, signed release** distributed by the instructor. 
 
 The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
-Until signed `v2.1.2` binaries are published, use the pinned source scripts below only in a supervised setup session.
+Until signed `v2.1.3` binaries are published, use the pinned source scripts below only in a supervised setup session.
 
 ## Supervised source installation
 
-These commands pin FOAD's installer to the versioned [`v2.1.2`](https://github.com/masterFoad/agent_setup/releases/tag/v2.1.2) tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
+These commands pin FOAD's installer to the versioned [`v2.1.3`](https://github.com/masterFoad/agent_setup/releases/tag/v2.1.3) tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
 
 ### Windows
 
@@ -56,7 +56,7 @@ Open PowerShell:
 
 ```powershell
 $path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path
 ```
 
@@ -69,7 +69,7 @@ The installer now verifies Claude using only the PATH that a genuinely new Power
 Open Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-mac.sh -o /tmp/foad-install-mac.sh
+curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh
 ```
 
@@ -142,7 +142,7 @@ Run the [Windows command](#windows) above. The installer then performs these ste
 | 7 | Install Antigravity IDE | `winget install --id Google.AntigravityIDE`. This is the **big** download and can look frozen — it is not. Fallback: the [download page](https://antigravity.google/download) opens in your browser. **Note:** `Google.Antigravity` (without `IDE`) is a different app — an agent orchestrator with no editor. Do not install it instead. | [Antigravity](https://antigravity.google/docs/ide/getting-started) |
 | 8 | Install Python 3 + pip | First available of `Python.Python.3.14`, `3.13`, `3.12`. Fallback: the [Python for Windows](https://www.python.org/downloads/windows/) page opens — tick **"Add python.exe to PATH"**. | [python.org](https://www.python.org/downloads/windows/) |
 | 9 | Install Claude Code | Repairs an existing install first (PATH only), then the native installer (`https://claude.ai/install.ps1`, run in a separate PowerShell process), then the `Anthropic.ClaudeCode` WinGet package. Each path must produce a **valid Anthropic Authenticode signature** and a `claude` that resolves on the persistent user PATH, or it is treated as failed. | [Claude Code setup](https://code.claude.com/docs/en/setup) |
-| 10 | Create workshop files | Writes a starter skill to `%USERPROFILE%\.claude\skills\summarize-changes\` and a command to `%USERPROFILE%\.claude\commands\`, plus `Desktop\FOAD-terminal-basics-v2.1.2.txt` (opened in Notepad at the end). | [Skills](https://code.claude.com/docs/en/skills) · [Slash commands](https://code.claude.com/docs/en/slash-commands) |
+| 10 | Create workshop files | Writes a starter skill to `%USERPROFILE%\.claude\skills\summarize-changes\` and a command to `%USERPROFILE%\.claude\commands\`, plus `Desktop\FOAD-terminal-basics-v2.1.3.txt` (opened in Notepad at the end). | [Skills](https://code.claude.com/docs/en/skills) · [Slash commands](https://code.claude.com/docs/en/slash-commands) |
 | 11 | Final check | Re-resolves `git`, `node`, `npm`, `python`/`py`, `pip`, `claude` using **only the persisted machine + user PATH** — i.e. what a genuinely new PowerShell window will see — then prints a summary with a "how to fix" line per failed item. | [Claude Code PATH troubleshooting](https://code.claude.com/docs/en/troubleshoot-install#verify-your-path) |
 
 Windows-specific notes:
