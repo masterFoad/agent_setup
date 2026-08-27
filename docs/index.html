@@ -542,6 +542,41 @@
     .lang.is-leaving,.lang.is-entering{opacity:1;transform:none;}
   }
 
+
+  /* ---------- Path chooser (do it for me / step by step) ---------- */
+  .modes{margin:34px 0 0;}
+  .modes h2{
+    font-size:15px;
+    font-family:var(--mono);
+    font-weight:400;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:14px;
+  }
+  .lang[lang="ar"] .modes h2{font-family:var(--arabic);font-size:17px;letter-spacing:.03em;}
+  .mode-choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .mode-choice{
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    padding:18px 18px 16px;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    text-align:start;
+    transition:background .15s ease, color .15s ease;
+  }
+  .mode-choice .mode-name{display:block;font-size:18px;font-weight:700;margin-bottom:4px;}
+  .mode-choice .mode-desc{display:block;font-size:14px;color:var(--ink-faint);line-height:1.5;}
+  .mode-choice:hover{background:var(--code-bg);}
+  .mode-choice[aria-selected="true"]{background:var(--ink);color:var(--paper);}
+  .mode-choice[aria-selected="true"] .mode-desc{color:var(--paper);opacity:.72;}
+  .mode-choice:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block;}
+  @media (max-width:520px){ .mode-choices{grid-template-columns:1fr;} }
+
   /* ---------- Bidi safety ---------- */
   /* Latin tool names inside Arabic headings/prose reorder without isolation. */
   bdi{unicode-bidi:isolate;}
@@ -582,6 +617,20 @@
     <p class="detected" id="detected-en"></p>
   </div>
 
+  <div class="modes">
+    <h2>How do you want to do this?</h2>
+    <div class="mode-choices" role="tablist" aria-label="Choose how to install">
+      <button class="mode-choice" data-mode-btn="lazy" role="tab" aria-selected="false">
+        <span class="mode-name">Let Claude do it</span>
+        <span class="mode-desc">Install Claude Code, then hand it one line and let it install the rest.</span>
+      </button>
+      <button class="mode-choice" data-mode-btn="steps" role="tab" aria-selected="false">
+        <span class="mode-name">Step by step</span>
+        <span class="mode-desc">Run the commands yourself, in order. Four steps.</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ================= MAC ================= -->
   <div class="platform-panel" id="panel-mac-en" role="tabpanel" aria-labelledby="tab-mac-en">
 
@@ -597,6 +646,55 @@
       </ul>
       <p>Homebrew comes along too — it's the helper that installs the rest. One command sets up everything.</p>
     </section>
+
+    <div class="mode-panel" data-mode-panel="lazy">
+      <section class="step">
+        <span class="step-n">Step 1</span>
+        <h2>Install Claude Code</h2>
+        <p>Copy this, paste it into Terminal, and press Enter. This is the only thing you install by hand.</p>
+        <div class="code-label">Terminal</div>
+        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
+/bin/bash /tmp/claude-install.sh</code></pre>
+        <p>When it finishes, close Terminal and open a new window.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 2</span>
+        <h2>Log in</h2>
+        <div class="code-label">Terminal</div>
+        <pre><code>claude</code></pre>
+        <p>Your browser opens to log in. Use a Claude account on a paid plan — Pro or higher. You'll end up at a prompt waiting for you to type.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 3</span>
+        <h2>Hand Claude the rest</h2>
+        <p>Paste this line to Claude and press Enter:</p>
+        <div class="code-label">Ask Claude</div>
+        <pre><code>read https://masterfoad.github.io/agent_setup/lazy/mac.md and follow it exactly</code></pre>
+        <div class="note">
+          <span class="note-tag">Say yes once, and it stops asking</span>
+          Claude asks permission before it fetches that page and before it runs anything. Choose the option that says <strong>yes, and don't ask again</strong> — otherwise you'll be answering prompts the whole way through.
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 4</span>
+        <h2>Let it work</h2>
+        <p>Claude installs Git, Node.js, Python and Antigravity IDE, checking each one as it goes. It takes a while, and it will tell you what it's doing. When it's finished you'll see:</p>
+        <pre><code>ALL DONE:
+git --version      2.51.0
+node --version     v22.20.0
+npm --version      10.9.3
+python3 --version  Python 3.14.0
+claude --version   2.1.4
+Antigravity IDE    installed</code></pre>
+        <p>If something didn't work, Claude says <strong>NOT FINISHED</strong> instead and tells you which one and what to do. Quit Terminal and open a fresh window, then open <strong>Antigravity IDE</strong> from your Applications folder and sign in with your Google account.</p>
+      </section>
+    </div>
+
+    <div class="mode-panel" data-mode-panel="steps">
+
 
     <section class="step">
       <span class="step-n">Step 1</span>
@@ -684,6 +782,7 @@ pip3 --version
 claude --version</code></pre>
       </div>
     </details>
+    </div>
   </div>
 
   <!-- ================= WINDOWS ================= -->
@@ -701,6 +800,56 @@ claude --version</code></pre>
       </ul>
       <p>Windows installs these through its own app installer, so official Microsoft download windows will go by.</p>
     </section>
+
+    <div class="mode-panel" data-mode-panel="lazy">
+      <section class="step">
+        <span class="step-n">Step 1</span>
+        <h2>Install Claude Code</h2>
+        <p>Copy this, paste it into PowerShell, and press Enter. This is the only thing you install by hand.</p>
+        <div class="code-label">PowerShell</div>
+        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
+Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
+powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <p>When it finishes, close PowerShell and open a new window.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 2</span>
+        <h2>Log in</h2>
+        <div class="code-label">PowerShell</div>
+        <pre><code>claude</code></pre>
+        <p>Your browser opens to log in. Use a Claude account on a paid plan — Pro or higher. You'll end up at a prompt waiting for you to type.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 3</span>
+        <h2>Hand Claude the rest</h2>
+        <p>Paste this line to Claude and press Enter:</p>
+        <div class="code-label">Ask Claude</div>
+        <pre><code>read https://masterfoad.github.io/agent_setup/lazy/windows.md and follow it exactly</code></pre>
+        <div class="note">
+          <span class="note-tag">Say yes once, and it stops asking</span>
+          Claude asks permission before it fetches that page and before it runs anything. Choose the option that says <strong>yes, and don't ask again</strong> — otherwise you'll be answering prompts the whole way through.
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-n">Step 4</span>
+        <h2>Let it work</h2>
+        <p>Claude installs Git, Node.js, Python and Antigravity IDE, checking each one as it goes. It takes a while, and it will tell you what it's doing. When it's finished you'll see:</p>
+        <pre><code>ALL DONE:
+git --version      2.51.0
+node --version     v22.20.0
+npm --version      10.9.3
+python --version   Python 3.14.0
+claude --version   2.1.4
+Antigravity IDE    installed</code></pre>
+        <p>If something didn't work, Claude says <strong>NOT FINISHED</strong> instead and tells you which one and what to do. Close PowerShell and open a fresh window, then open <strong>Antigravity IDE</strong> from the Start Menu and sign in with your Google account. If it offers to install WSL, choose Skip — and pick the <strong>PowerShell</strong> profile in its terminal.</p>
+      </section>
+    </div>
+
+    <div class="mode-panel" data-mode-panel="steps">
+
 
     <section class="step">
       <span class="step-n">Step 1</span>
@@ -798,6 +947,7 @@ pip --version
 claude --version</code></pre>
       </div>
     </details>
+    </div>
   </div>
 </div>
 
@@ -827,6 +977,20 @@ claude --version</code></pre>
     <p class="detected" id="detected-ar"></p>
   </div>
 
+  <div class="modes">
+    <h2>كيف تريد أن تفعل ذلك؟</h2>
+    <div class="mode-choices" role="tablist" aria-label="اختر طريقة التثبيت">
+      <button class="mode-choice" data-mode-btn="lazy" role="tab" aria-selected="false">
+        <span class="mode-name">دع <bdi>Claude</bdi> يتولّى الأمر</span>
+        <span class="mode-desc">ثبّت <bdi>Claude Code</bdi>، ثم أعطه سطرًا واحدًا ليثبّت الباقي.</span>
+      </button>
+      <button class="mode-choice" data-mode-btn="steps" role="tab" aria-selected="false">
+        <span class="mode-name">خطوة بخطوة</span>
+        <span class="mode-desc">شغّل الأوامر بنفسك بالترتيب. أربع خطوات.</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ================= MAC ================= -->
   <div class="platform-panel" id="panel-mac-ar" role="tabpanel" aria-labelledby="tab-mac-ar">
 
@@ -842,6 +1006,55 @@ claude --version</code></pre>
       </ul>
       <p>ويأتي معها <bdi>Homebrew</bdi>، وهو الأداة التي تثبّت البقية. أمر واحد يهيّئ كل شيء.</p>
     </section>
+
+    <div class="mode-panel" data-mode-panel="lazy">
+      <section class="step">
+        <span class="step-n">الخطوة ١</span>
+        <h2>ثبّت <bdi>Claude Code</bdi></h2>
+        <p>انسخ هذا، ألصقه في <bdi>Terminal</bdi>، واضغط Enter. هذا الشيء الوحيد الذي ستثبّته بنفسك.</p>
+        <div class="code-label"><bdi>Terminal</bdi></div>
+        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
+/bin/bash /tmp/claude-install.sh</code></pre>
+        <p>عند انتهائه، أغلق <bdi>Terminal</bdi> وافتح نافذة جديدة.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٢</span>
+        <h2>سجّل الدخول</h2>
+        <div class="code-label"><bdi>Terminal</bdi></div>
+        <pre><code>claude</code></pre>
+        <p>سيفتح المتصفح لتسجيل الدخول. استخدم حساب <bdi>Claude</bdi> باشتراك مدفوع — <bdi>Pro</bdi> أو أعلى. ستصل بعدها إلى سطر ينتظر منك الكتابة.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٣</span>
+        <h2>سلّم الباقي إلى <bdi>Claude</bdi></h2>
+        <p>ألصق هذا السطر لـ<bdi>Claude</bdi> واضغط Enter:</p>
+        <div class="code-label">اطلب من <bdi>Claude</bdi></div>
+        <pre><code>read https://masterfoad.github.io/agent_setup/lazy/mac.md and follow it exactly</code></pre>
+        <div class="note">
+          <span class="note-tag">وافق مرة واحدة فيتوقّف عن السؤال</span>
+          يطلب <bdi>Claude</bdi> إذنك قبل فتح تلك الصفحة وقبل تشغيل أي أمر. اختر الخيار الذي يقول <strong>نعم، ولا تسأل مجددًا</strong>، وإلا ستظل تجيب عن الأسئلة طوال الطريق.
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٤</span>
+        <h2>اتركه يعمل</h2>
+        <p>سيثبّت <bdi>Claude</bdi> أدوات <bdi>Git</bdi> و<bdi>Node.js</bdi> و<bdi>Python</bdi> و<bdi>Antigravity IDE</bdi>، ويتحقّق من كل واحدة أولًا بأول. يستغرق ذلك وقتًا وسيخبرك بما يفعله. وعند الانتهاء سترى:</p>
+        <pre><code>ALL DONE:
+git --version      2.51.0
+node --version     v22.20.0
+npm --version      10.9.3
+python3 --version  Python 3.14.0
+claude --version   2.1.4
+Antigravity IDE    installed</code></pre>
+        <p>وإن لم ينجح شيء ما، سيكتب <strong>NOT FINISHED</strong> بدلًا منها ويخبرك أيّها وما العمل. أغلق <bdi>Terminal</bdi> وافتح نافذة جديدة، ثم افتح <strong><bdi>Antigravity IDE</bdi></strong> من مجلد التطبيقات وسجّل الدخول بحساب Google.</p>
+      </section>
+    </div>
+
+    <div class="mode-panel" data-mode-panel="steps">
+
 
     <section class="step">
       <span class="step-n">الخطوة ١</span>
@@ -929,6 +1142,7 @@ pip3 --version
 claude --version</code></pre>
       </div>
     </details>
+    </div>
   </div>
 
   <!-- ================= WINDOWS ================= -->
@@ -946,6 +1160,56 @@ claude --version</code></pre>
       </ul>
       <p>يثبّتها ويندوز عبر مثبّت التطبيقات الخاص به، لذا سترى نوافذ تنزيل رسمية من مايكروسوفت تمرّ أمامك.</p>
     </section>
+
+    <div class="mode-panel" data-mode-panel="lazy">
+      <section class="step">
+        <span class="step-n">الخطوة ١</span>
+        <h2>ثبّت <bdi>Claude Code</bdi></h2>
+        <p>انسخ هذا، ألصقه في <bdi>PowerShell</bdi>، واضغط Enter. هذا الشيء الوحيد الذي ستثبّته بنفسك.</p>
+        <div class="code-label"><bdi>PowerShell</bdi></div>
+        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
+Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
+powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
+        <p>عند انتهائه، أغلق <bdi>PowerShell</bdi> وافتح نافذة جديدة.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٢</span>
+        <h2>سجّل الدخول</h2>
+        <div class="code-label"><bdi>PowerShell</bdi></div>
+        <pre><code>claude</code></pre>
+        <p>سيفتح المتصفح لتسجيل الدخول. استخدم حساب <bdi>Claude</bdi> باشتراك مدفوع — <bdi>Pro</bdi> أو أعلى. ستصل بعدها إلى سطر ينتظر منك الكتابة.</p>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٣</span>
+        <h2>سلّم الباقي إلى <bdi>Claude</bdi></h2>
+        <p>ألصق هذا السطر لـ<bdi>Claude</bdi> واضغط Enter:</p>
+        <div class="code-label">اطلب من <bdi>Claude</bdi></div>
+        <pre><code>read https://masterfoad.github.io/agent_setup/lazy/windows.md and follow it exactly</code></pre>
+        <div class="note">
+          <span class="note-tag">وافق مرة واحدة فيتوقّف عن السؤال</span>
+          يطلب <bdi>Claude</bdi> إذنك قبل فتح تلك الصفحة وقبل تشغيل أي أمر. اختر الخيار الذي يقول <strong>نعم، ولا تسأل مجددًا</strong>، وإلا ستظل تجيب عن الأسئلة طوال الطريق.
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-n">الخطوة ٤</span>
+        <h2>اتركه يعمل</h2>
+        <p>سيثبّت <bdi>Claude</bdi> أدوات <bdi>Git</bdi> و<bdi>Node.js</bdi> و<bdi>Python</bdi> و<bdi>Antigravity IDE</bdi>، ويتحقّق من كل واحدة أولًا بأول. يستغرق ذلك وقتًا وسيخبرك بما يفعله. وعند الانتهاء سترى:</p>
+        <pre><code>ALL DONE:
+git --version      2.51.0
+node --version     v22.20.0
+npm --version      10.9.3
+python --version   Python 3.14.0
+claude --version   2.1.4
+Antigravity IDE    installed</code></pre>
+        <p>وإن لم ينجح شيء ما، سيكتب <strong>NOT FINISHED</strong> بدلًا منها ويخبرك أيّها وما العمل. أغلق <bdi>PowerShell</bdi> وافتح نافذة جديدة، ثم افتح <strong><bdi>Antigravity IDE</bdi></strong> من قائمة ابدأ وسجّل الدخول بحساب Google. وإذا عرض تثبيت <bdi>WSL</bdi> فاختر «تخطّي»، واختر ملف تعريف <strong><bdi>PowerShell</bdi></strong> في طرفيته.</p>
+      </section>
+    </div>
+
+    <div class="mode-panel" data-mode-panel="steps">
+
 
     <section class="step">
       <span class="step-n">الخطوة ١</span>
@@ -1043,6 +1307,7 @@ pip --version
 claude --version</code></pre>
       </div>
     </details>
+    </div>
   </div>
 </div>
 
@@ -1115,6 +1380,32 @@ claude --version</code></pre>
       if(ar) ar.textContent = msg.ar;
     }
   }
+
+
+  /* ----- Path choice: let Claude do it, or follow the steps ----- */
+  var MODES = ['lazy', 'steps'];
+  function selectMode(mode, scroll){
+    MODES.forEach(function(m){
+      var on = m === mode;
+      document.querySelectorAll('[data-mode-btn="' + m + '"]').forEach(function(btn){
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('[data-mode-panel="' + m + '"]').forEach(function(panel){
+        panel.classList.toggle('active', on);
+      });
+    });
+    try { localStorage.setItem('mode', mode); } catch(e){}
+    if(scroll){
+      var visible = document.querySelector('.lang:not([hidden]) .platform-panel.active .mode-panel.active');
+      if(visible) visible.scrollIntoView({block:'start', behavior:'smooth'});
+    }
+  }
+  document.querySelectorAll('[data-mode-btn]').forEach(function(btn){
+    btn.addEventListener('click', function(){ selectMode(btn.getAttribute('data-mode-btn'), true); });
+  });
+  var storedMode = null;
+  try { storedMode = localStorage.getItem('mode'); } catch(e){}
+  selectMode(MODES.indexOf(storedMode) !== -1 ? storedMode : 'steps', false);
 
   /* ----- Language switch (default: English) ----- */
   var btnEn = document.getElementById('btn-en');
