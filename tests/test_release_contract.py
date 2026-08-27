@@ -48,6 +48,30 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertIn("$code -eq 0 -and $result -match", windows)
         self.assertNotIn("$code -eq 0 -or $result -match", windows)
 
+    def test_windows_claude_is_persisted_and_checked_like_a_new_shell(self):
+        windows = read("install-windows.ps1")
+        self.assertIn('[Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")', windows)
+        self.assertIn('Ensure-CommandOnPersistentPath "claude"', windows)
+        self.assertIn('Check-CommandVersion "claude" -PersistentPathOnly', windows)
+        self.assertIn("Get-AuthenticodeSignature", windows)
+        self.assertIn("& $windowsPowerShell", windows)
+        self.assertNotIn("npm install -g @anthropic-ai/claude-code", windows)
+
+    def test_windows_failure_stops_before_success_next_steps(self):
+        windows = read("install-windows.ps1")
+        final_check = windows.index('$hasFailure = $script:Summary.Values')
+        success_panel = windows.index(' WHAT TO DO NEXT')
+        self.assertLess(final_check, success_panel)
+        self.assertIn("Do not continue to Claude or Antigravity yet.", windows)
+
+    def test_windows_wsl_guidance_is_prominent(self):
+        windows = read("install-windows.ps1")
+        readme = read("README.md")
+        self.assertIn("WSL IS NOT REQUIRED", windows)
+        self.assertIn("WSL is not required", readme)
+        self.assertIn("Select Default Profile", windows)
+        self.assertIn("FOAD-terminal-basics-v$($script:InstallerVersion).txt", windows)
+
     def test_packaged_consent_contains_same_material_prerequisites(self):
         launcher = read("packaging/macos/FOAD-Dev-Setup.command.template")
         iss = read("packaging/windows/foad-dev-setup.iss")

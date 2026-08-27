@@ -48,6 +48,7 @@ begin
     'Individual package installers may request administrator permission.' + #13#10 +
     'Claude Code requires an eligible subscription, Console account, or supported provider.' + #13#10 +
     'Antigravity IDE sign-in may require a Google account.' + #13#10 +
+    'WSL is not required; skip WSL prompts and use the PowerShell terminal profile.' + #13#10 +
     'The setup creates files under your .claude folder and Desktop and saves a setup log.' + #13#10#13#10 +
     'After setup, close and reopen PowerShell, then run: claude',
     mbInformation,

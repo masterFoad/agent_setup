@@ -2,7 +2,7 @@
 
 Beginner-oriented Windows and macOS setup for a supervised FOAD workshop.
 
-Version: **2.1.1**
+Version: **2.1.2**
 
 Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a starter Claude command/skill, and a terminal guide.
 
@@ -27,11 +27,11 @@ For interns, use a **versioned, signed release** distributed by the instructor. 
 
 The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
-Until signed `v2.1.1` binaries are published, use the pinned source scripts below only in a supervised setup session.
+Until signed `v2.1.2` binaries are published, use the pinned source scripts below only in a supervised setup session.
 
 ## Supervised source installation
 
-These commands pin FOAD's installer to the versioned `v2.1.1` tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
+These commands pin FOAD's installer to the versioned `v2.1.2` tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
 
 ### Windows
 
@@ -39,16 +39,20 @@ Open PowerShell:
 
 ```powershell
 $path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path
 ```
+
+The installer now verifies Claude using only the PATH that a genuinely new PowerShell will receive. If an older FOAD setup left `claude.exe` installed but unreachable, rerunning this version repairs the user PATH.
+
+**WSL is not required for this workshop.** If Antigravity offers to install or open WSL, choose **Skip**, **Cancel**, or **Not now**. In Antigravity's terminal menu choose **Select Default Profile → PowerShell**, close the existing terminal, and open a new one.
 
 ### macOS
 
 Open Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-mac.sh -o /tmp/foad-install-mac.sh
+curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh
 ```
 
@@ -61,7 +65,7 @@ Instructors can compare the downloaded scripts against [`SHA256SUMS`](SHA256SUMS
 1. Close and reopen PowerShell or Terminal.
 2. Run `claude` and follow the login instructions.
 3. Open Google Antigravity IDE.
-4. Read `FOAD-terminal-basics.txt` on the Desktop.
+4. Read the FOAD terminal guide on the Desktop (`FOAD-terminal-basics-v<version>.txt` on Windows).
 
 Verify with:
 
@@ -81,7 +85,8 @@ If setup is incomplete, follow the final summary and rerun it. Existing workshop
 ### Windows
 
 - Send `FOAD-setup-log.txt` from the Desktop to the instructor.
-- If `claude` is missing only inside Antigravity, choose a **PowerShell** terminal profile rather than WSL/Ubuntu.
+- If `claude` is missing in a normal PowerShell, rerun the current setup; it repairs and verifies the persistent user PATH. If it still fails, send `FOAD-setup-log.txt` to the instructor.
+- If `claude` is missing only inside Antigravity, cancel any WSL prompt, choose **Select Default Profile → PowerShell**, close the existing terminal, and create a new terminal. WSL is not required.
 - Large WinGet downloads can appear idle; check for a hidden UAC prompt in the taskbar.
 - The WinGet registration/Store recovery path needs validation on a clean Windows VM before each workshop.
 
@@ -109,4 +114,4 @@ Builders emit a `.sha256` file beside each artifact. `FOAD_ALLOW_UNTAGGED_BUILD=
 - Test macOS on both Apple Silicon and Intel where supported.
 - Run the validation workflow and verify failure/recovery paths before distribution.
 
-Current upstream references: [Claude Code setup](https://code.claude.com/docs/en/setup), [Claude Code authentication](https://code.claude.com/docs/en/authentication), [Homebrew installation](https://docs.brew.sh/Installation), [Homebrew support tiers](https://docs.brew.sh/Support-Tiers), [Microsoft WinGet](https://learn.microsoft.com/windows/package-manager/winget/), and [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).
+Current upstream references: [Claude Code setup](https://code.claude.com/docs/en/setup), [Claude Code PATH troubleshooting](https://code.claude.com/docs/en/troubleshoot-install#verify-your-path), [Claude Code authentication](https://code.claude.com/docs/en/authentication), [Antigravity IDE requirements](https://antigravity.google/docs/ide/getting-started), [Homebrew installation](https://docs.brew.sh/Installation), [Homebrew support tiers](https://docs.brew.sh/Support-Tiers), [Microsoft WinGet](https://learn.microsoft.com/windows/package-manager/winget/), and [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).

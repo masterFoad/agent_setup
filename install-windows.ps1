@@ -1,5 +1,6 @@
 param(
-    [switch]$AssumeYes
+    [switch]$AssumeYes,
+    [switch]$LibraryOnly
 )
 
 <#
@@ -7,10 +8,10 @@ FOAD Dev Setup - Windows  (workshop edition, written for absolute beginners)
 Installs: Git, Node.js LTS/npm, Google Antigravity IDE, Python 3, Claude Code, and beginner Claude Code skill files.
 Run from PowerShell. Reruns preserve existing workshop files.
 Pinned workshop source:
-Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
+Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File $env:TEMP\foad-install-windows.ps1
 
-Last verified against official sources: 2026-07-07
+Last verified against official sources: 2026-08-27
 - Claude Code native installer:  https://code.claude.com/docs/en/setup  (irm https://claude.ai/install.ps1 | iex)
 - Claude Code winget alternative: winget install Anthropic.ClaudeCode  (does NOT auto-update; native installer does)
 - Antigravity: Google renamed things in mid-2026. "Google.Antigravity" is now a NEW agent-orchestrator
@@ -25,7 +26,8 @@ Instructor notes:
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$script:InstallerVersion = "2.1.1"
+$script:InstallerVersion = "2.1.2"
+$script:GuideFileName = "FOAD-terminal-basics-v$($script:InstallerVersion).txt"
 
 # ---------------------------------------------------------------------------
 # Output helpers, progress counter, run summary
@@ -135,6 +137,7 @@ function Refresh-PathForCurrentSession {
         (Join-Path $HOME ".claude\local"),
         (Join-Path $HOME "AppData\Roaming\npm"),
         (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Packages"),
+        (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Links"),
         (Join-Path $HOME "AppData\Local\Microsoft\WindowsApps")
     )
 
@@ -148,8 +151,104 @@ function Refresh-PathForCurrentSession {
         }
     }
 
-    $extra = ($extraDirs -join ";")
-    $env:Path = "$machinePath;$userPath;$extra;$env:Path"
+    $seen = @{}
+    $allEntries = @($machinePath, $userPath) + $extraDirs + @($env:Path)
+    $uniqueEntries = foreach ($value in $allEntries) {
+        foreach ($entry in @($value -split ";")) {
+            $trimmed = $entry.Trim()
+            if ($trimmed -and -not $seen.ContainsKey($trimmed)) {
+                $seen[$trimmed] = $true
+                $trimmed
+            }
+        }
+    }
+    $env:Path = $uniqueEntries -join ";"
+}
+
+function Get-PersistentWindowsPath {
+    $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    return (@($machinePath, $userPath) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ";"
+}
+
+function Publish-EnvironmentChange {
+    try {
+        if (-not ("FOAD.EnvironmentBroadcaster" -as [type])) {
+            Add-Type -Namespace FOAD -Name EnvironmentBroadcaster -MemberDefinition @'
+[System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+public static extern System.IntPtr SendMessageTimeout(
+    System.IntPtr hWnd, uint Msg, System.UIntPtr wParam, string lParam,
+    uint flags, uint timeout, out System.UIntPtr result);
+'@
+        }
+        $result = [UIntPtr]::Zero
+        [void][FOAD.EnvironmentBroadcaster]::SendMessageTimeout(
+            [IntPtr]0xffff, 0x001A, [UIntPtr]::Zero, "Environment", 2, 5000, [ref]$result)
+    } catch {
+        Warn "PATH was saved, but Windows could not notify open apps. Close and reopen them before testing commands."
+    }
+}
+
+function Add-DirectoryToUserPath([string]$Directory) {
+    if ([string]::IsNullOrWhiteSpace($Directory) -or -not (Test-Path -LiteralPath $Directory -PathType Container)) {
+        return $false
+    }
+
+    $fullDirectory = [System.IO.Path]::GetFullPath($Directory).TrimEnd('\')
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $entries = @($userPath -split ";" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $alreadyPresent = $entries | Where-Object {
+        try { [System.IO.Path]::GetFullPath($_).TrimEnd('\') -ieq $fullDirectory }
+        catch { $_.TrimEnd('\') -ieq $fullDirectory }
+    }
+
+    if (-not $alreadyPresent) {
+        $newUserPath = (@($entries) + $fullDirectory) -join ";"
+        [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+        Ok "Saved command folder to your user PATH: $fullDirectory"
+        Publish-EnvironmentChange
+    }
+
+    return $true
+}
+
+function Resolve-ExternalCommand([string]$Command) {
+    return Get-Command $Command -All -CommandType Application, ExternalScript -ErrorAction SilentlyContinue |
+        Sort-Object @{ Expression = { if ($_.CommandType -eq "Application") { 0 } else { 1 } } } |
+        Select-Object -First 1
+}
+
+function Ensure-CommandOnPersistentPath([string]$Command) {
+    Refresh-PathForCurrentSession
+    $cmd = Resolve-ExternalCommand $Command
+    if (-not $cmd) { return $false }
+
+    $source = if ($cmd.Source) { $cmd.Source } else { $cmd.Path }
+    if ([string]::IsNullOrWhiteSpace($source)) { return $false }
+    return (Add-DirectoryToUserPath -Directory (Split-Path -Parent $source))
+}
+
+function Get-VerifiedSignedClaudePath {
+    $candidates = @(
+        (Join-Path $HOME ".local\bin\claude.exe"),
+        (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Links\claude.exe")
+    )
+    $candidates += @(Get-Command "claude" -All -CommandType Application -ErrorAction SilentlyContinue |
+        ForEach-Object { if ($_.Source) { $_.Source } else { $_.Path } })
+
+    foreach ($source in @($candidates | Select-Object -Unique)) {
+        if (-not $source -or -not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }
+        if ([System.IO.Path]::GetExtension($source) -ine ".exe") { continue }
+        $signature = Get-AuthenticodeSignature -FilePath $source
+        if ($signature.Status -eq "Valid" -and
+            $signature.SignerCertificate.Subject -match "Anthropic") {
+            Ok "Claude Code executable signature is valid: $($signature.SignerCertificate.Subject)"
+            return $source
+        }
+    }
+
+    Warn "No Claude Code executable with a valid Anthropic signature was found."
+    return $null
 }
 
 # ---------------------------------------------------------------------------
@@ -212,7 +311,7 @@ function Install-WingetPackage([string]$Id, [string]$Name, [switch]$Required) {
         # --silent installs unattended (no clicking). winget still prints its own
         # download progress to this console. Removing --silent would show each
         # app's installer UI but require the student to click through it.
-        winget install --id $Id --exact --silent --accept-package-agreements --accept-source-agreements
+        winget install --id $Id --exact --source winget --silent --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -eq 0) {
             Ok "$Name installed."
             return $true
@@ -249,42 +348,58 @@ function Install-FirstAvailableWingetPackage([string[]]$Ids, [string]$Name, [str
 
 function Install-ClaudeCodeNative {
     Step "Installing Claude Code"
-    # URL verified against https://code.claude.com/docs/en/setup (official native installer).
-    # This does NOT require Administrator. Alternative official path that would be more
-    # consistent with the rest of this script: winget install Anthropic.ClaudeCode
-    # (WinGet installs do not auto-update; the native installer below does.)
-    #
-    # KNOWN UPSTREAM QUIRK (anthropics/claude-code #26880): install.ps1 can print
-    # "Installation complete!" even when the underlying install failed, because it
-    # does not check the child process exit code. That is why this script does NOT
-    # trust the installer's own success message - the real test is the
-    # Check-CommandVersion "claude" step in the verification phase below.
+    # First repair a previous install whose executable exists but whose folder was
+    # never persisted to the User PATH (the most common v2.1.1 failure).
+    Refresh-PathForCurrentSession
+    if ((Check-CommandVersion "claude") -and
+        (Ensure-CommandOnPersistentPath "claude") -and
+        (Check-CommandVersion "claude" -PersistentPathOnly)) {
+        Ok "Existing Claude Code installation is available in new PowerShell windows."
+        return $true
+    }
+
+    # The official bootstrap now propagates its child installer exit code. Run it
+    # in a separate PowerShell process so an upstream `exit` cannot terminate this
+    # FOAD setup before it writes a summary and recovery guidance.
+    $installerPath = Join-Path $env:TEMP ("foad-claude-install-" + [guid]::NewGuid() + ".ps1")
     try {
-        $installer = Invoke-RestMethod -Uri "https://claude.ai/install.ps1" -UseBasicParsing
-        Invoke-Expression $installer
+        Invoke-WebRequest -Uri "https://claude.ai/install.ps1" -UseBasicParsing -OutFile $installerPath
+        $windowsPowerShell = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
+        & $windowsPowerShell -NoProfile -ExecutionPolicy Bypass -File $installerPath stable
+        $nativeExitCode = $LASTEXITCODE
+        if ($nativeExitCode -ne 0) { throw "official installer exited with code $nativeExitCode" }
+
         Refresh-PathForCurrentSession
-        if (Check-CommandVersion "claude") {
+        $signedClaudePath = Get-VerifiedSignedClaudePath
+        if ($signedClaudePath -and
+            (Add-DirectoryToUserPath (Split-Path -Parent $signedClaudePath)) -and
+            (Check-CommandVersion "claude" -PersistentPathOnly)) {
             Ok "Claude Code installed and verified with the native installer."
             return $true
         }
-        throw "The native installer finished, but claude --version did not succeed."
+        throw "The native installer finished, but persistent PATH or signature verification failed."
     } catch {
         Warn "Claude Code native installer failed: $($_.Exception.Message)"
-        Warn "Trying plan B: npm install -g @anthropic-ai/claude-code"
-        try {
-            npm install -g @anthropic-ai/claude-code
-            if ($LASTEXITCODE -ne 0) { throw "npm exited with code $LASTEXITCODE" }
-            Refresh-PathForCurrentSession
-            if (Check-CommandVersion "claude") {
-                Ok "Claude Code installed and verified with the npm fallback."
-                return $true
-            }
-            throw "npm completed, but claude --version did not succeed."
-        } catch {
-            Warn "The npm fallback also failed: $($_.Exception.Message)"
-            Warn "After setup, install manually from: https://code.claude.com/docs/en/setup"
-            return $false
+    } finally {
+        if (Test-Path $installerPath) { Remove-Item -Force $installerPath -ErrorAction SilentlyContinue }
+    }
+
+    Warn "Trying plan B: the official WinGet package."
+    try {
+        $wingetOk = Install-WingetPackage -Id "Anthropic.ClaudeCode" -Name "Claude Code (WinGet)"
+        Refresh-PathForCurrentSession
+        $signedClaudePath = Get-VerifiedSignedClaudePath
+        if ($wingetOk -and $signedClaudePath -and
+            (Add-DirectoryToUserPath (Split-Path -Parent $signedClaudePath)) -and
+            (Check-CommandVersion "claude" -PersistentPathOnly)) {
+            Ok "Claude Code installed and verified with WinGet."
+            return $true
         }
+        throw "WinGet completed, but persistent PATH or signature verification failed."
+    } catch {
+        Warn "The WinGet fallback failed: $($_.Exception.Message)"
+        Warn "Install manually from https://code.claude.com/docs/en/setup, then rerun FOAD setup."
+        return $false
     }
 }
 
@@ -344,7 +459,7 @@ function Write-TerminalGuide {
     # Returns the guide path if the file was newly created, otherwise $null.
     Step "Creating beginner terminal guide"
 
-    $guidePath = Join-Path (Get-DesktopPath) "FOAD-terminal-basics.txt"
+    $guidePath = Join-Path (Get-DesktopPath) $script:GuideFileName
     $isNew = -not (Test-Path $guidePath)
 
     if (-not $isNew) {
@@ -414,6 +529,8 @@ IDE" in the Start Menu.
 
 IMPORTANT - terminal inside Antigravity IDE:
 Claude Code was installed for normal Windows, so it runs in PowerShell.
+WSL is not required for this workshop. If Antigravity offers to install or
+open WSL, choose Cancel, Skip, or Not now.
 In Antigravity IDE, open a terminal and pick the "PowerShell" profile (NOT
 "WSL" or "Ubuntu"). If the terminal opens WSL/Linux, "claude" will say
 "command not found" and Windows may ask to install WSL - that is the wrong
@@ -438,11 +555,22 @@ claude
 # Verification
 # ---------------------------------------------------------------------------
 
-function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version") {
-    Refresh-PathForCurrentSession
-    $cmd = Get-Command $Command -ErrorAction SilentlyContinue
+function Check-CommandVersion(
+    [string]$Command,
+    [string]$VersionArg = "--version",
+    [switch]$PersistentPathOnly
+) {
+    $savedPath = $env:Path
+    if ($PersistentPathOnly) {
+        $env:Path = Get-PersistentWindowsPath
+    } else {
+        Refresh-PathForCurrentSession
+    }
+
+    $cmd = Resolve-ExternalCommand $Command
     if (-not $cmd) {
-        Warn "$Command is not available yet. Restart PowerShell and try: $Command $VersionArg"
+        $env:Path = $savedPath
+        Warn "$Command is not available through the persistent Windows PATH."
         return $false
     }
 
@@ -462,17 +590,19 @@ function Check-CommandVersion([string]$Command, [string]$VersionArg = "--version
         Warn "$Command exists but version check returned exit code $code`: $result"
         return $false
     } catch {
-        Warn "$Command exists but version check failed. Restart PowerShell and try: $Command $VersionArg"
+        Warn "$Command exists but version check failed: $Command $VersionArg"
         return $false
+    } finally {
+        $env:Path = $savedPath
     }
 }
 
-function Check-PythonVersion {
+function Check-PythonVersion([switch]$PersistentPathOnly) {
     # winget Python installs sometimes only expose the "py" launcher until a
     # new shell picks up PATH changes. Accept either python or py.
-    if (Check-CommandVersion "python") { return $true }
+    if (Check-CommandVersion "python" -PersistentPathOnly:$PersistentPathOnly) { return $true }
     Warn "Trying the 'py' launcher instead of 'python'..."
-    if (Check-CommandVersion "py") {
+    if (Check-CommandVersion "py" -PersistentPathOnly:$PersistentPathOnly) {
         Ok "Python is available via 'py'. After restarting PowerShell, plain 'python' should work too."
         return $true
     }
@@ -551,6 +681,8 @@ trap {
 # Main
 # ---------------------------------------------------------------------------
 
+if ($LibraryOnly) { return }
+
 # Log everything to the Desktop so students can send the instructor one file.
 $script:LogPath = Join-Path (Get-DesktopPath) "FOAD-setup-log.txt"
 $script:TranscriptStarted = $false
@@ -591,6 +723,7 @@ if (-not $AssumeYes) {
     Write-Host "  - Windows may request administrator approval for individual packages."
     Write-Host "  - Claude Code needs an eligible Claude subscription, Console account, or supported provider."
     Write-Host "  - Antigravity IDE sign-in may require a Google account."
+    Write-Host "  - WSL is not required. If Antigravity asks for WSL, skip it and select PowerShell."
     Write-Host "  - This setup creates files under .claude and on your Desktop and saves a setup log."
     $consent = Read-Host "Press ENTER to continue, or type Q to cancel"
     if ($consent -match '^[Qq]$') {
@@ -669,14 +802,25 @@ try {
 }
 
 Phase "Final check" "Testing that every tool actually answers when called."
-Record "git works"    $(if (Check-CommandVersion "git")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: git --version"
-Record "node works"   $(if (Check-CommandVersion "node")   { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: node --version"
-Record "npm works"    $(if (Check-CommandVersion "npm")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: npm --version"
-Record "python works" $(if (Check-PythonVersion)           { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: python --version (or: py --version)"
-Record "pip works"    $(if (Check-CommandVersion "pip")    { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: pip --version"
-Record "claude works" $(if (Check-CommandVersion "claude") { "OK" } else { "FAIL" }) "Close PowerShell, open a new one, type: claude --version. If still missing, run the setup command again."
+Record "git works in a new PowerShell"    $(if (Check-CommandVersion "git" -PersistentPathOnly)    { "OK" } else { "FAIL" }) "Open a new PowerShell and try: git --version"
+Record "node works in a new PowerShell"   $(if (Check-CommandVersion "node" -PersistentPathOnly)   { "OK" } else { "FAIL" }) "Open a new PowerShell and try: node --version"
+Record "npm works in a new PowerShell"    $(if (Check-CommandVersion "npm" -PersistentPathOnly)    { "OK" } else { "FAIL" }) "Open a new PowerShell and try: npm --version"
+Record "python works in a new PowerShell" $(if (Check-PythonVersion -PersistentPathOnly)            { "OK" } else { "FAIL" }) "Open a new PowerShell and try: python --version (or: py --version)"
+Record "pip works in a new PowerShell"    $(if (Check-CommandVersion "pip" -PersistentPathOnly)    { "OK" } else { "FAIL" }) "Open a new PowerShell and try: pip --version"
+Record "claude works in a new PowerShell" $(if (Check-CommandVersion "claude" -PersistentPathOnly) { "OK" } else { "FAIL" }) "Rerun setup. If it still fails, send FOAD-setup-log.txt to the instructor."
 
+$hasFailure = $script:Summary.Values | Where-Object { $_.Status -eq "FAIL" } | Select-Object -First 1
 Show-Summary
+
+if ($hasFailure) {
+    Write-Host "==========================================================" -ForegroundColor Red
+    Write-Host " SETUP IS NOT READY YET" -ForegroundColor Red
+    Write-Host "==========================================================" -ForegroundColor Red
+    Write-Host "Do not continue to Claude or Antigravity yet." -ForegroundColor White
+    Write-Host "Follow the 'how to fix' line in the summary, rerun setup, and send" -ForegroundColor White
+    Write-Host "FOAD-setup-log.txt from the Desktop to your instructor if it still fails." -ForegroundColor White
+    Finish 1
+}
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host " WHAT TO DO NEXT" -ForegroundColor Cyan
@@ -689,19 +833,15 @@ Write-Host "   (Pro or higher) - the free plan does not include it. Create or" -
 Write-Host "   upgrade your account at https://claude.ai BEFORE the workshop." -ForegroundColor Yellow
 Write-Host "4. Open 'Antigravity IDE' from the Start Menu." -ForegroundColor White
 Write-Host "   (NOT the app called just 'Antigravity' - that is a different app!)" -ForegroundColor White
-Write-Host "5. Read the cheat-sheet on your Desktop: FOAD-terminal-basics.txt" -ForegroundColor White
+Write-Host "   WSL IS NOT REQUIRED. If Antigravity asks about WSL, choose Skip/Cancel." -ForegroundColor Yellow
+Write-Host "   In its terminal menu choose: Select Default Profile -> PowerShell." -ForegroundColor Yellow
+Write-Host "5. Read the cheat-sheet on your Desktop: $($script:GuideFileName)" -ForegroundColor White
 Write-Host ""
 
 # Open the cheat-sheet automatically the first time so students actually see it.
 if ($newGuidePath) {
     Write-Host "Opening your cheat-sheet now..." -ForegroundColor Gray
     try { Start-Process notepad.exe $newGuidePath | Out-Null } catch { }
-}
-
-$hasFailure = $script:Summary.Values | Where-Object { $_.Status -eq "FAIL" } | Select-Object -First 1
-if ($hasFailure) {
-    FailMsg "FOAD setup is incomplete. Follow the 'how to fix' lines above, then rerun."
-    Finish 1
 }
 
 Ok "FOAD setup finished. Review any [WARN] items above before the workshop."

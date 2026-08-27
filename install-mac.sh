@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # FOAD Dev Setup - macOS
-# Version 2.1.1
+# Version 2.1.2
 #
 # Installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,
 # Claude Code, and beginner starter files. Reruns preserve existing workshop files.
 #
 # Website command:
-# curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-mac.sh -o /tmp/foad-install-mac.sh
+# curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-mac.sh -o /tmp/foad-install-mac.sh
 # /bin/bash /tmp/foad-install-mac.sh
 #
 # WORKSHOP INSTRUCTOR NOTES:
@@ -22,7 +22,7 @@
 
 set -u
 
-SCRIPT_VERSION="2.1.1"
+SCRIPT_VERSION="2.1.2"
 TOTAL_STEPS=11
 STEP_NUM=0
 SUMMARY_NOTE=""
@@ -236,7 +236,7 @@ install_homebrew() {
     echo "Do not run this installer using 'curl ... | bash'."
     echo ""
     echo "Run this exact command in Apple's Terminal app:"
-    echo 'curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.1/install-mac.sh -o /tmp/foad-install-mac.sh'
+    echo 'curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.2/install-mac.sh -o /tmp/foad-install-mac.sh'
     echo '/bin/bash /tmp/foad-install-mac.sh'
     echo ""
     stop_setup \
