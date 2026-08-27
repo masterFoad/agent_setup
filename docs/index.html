@@ -1302,6 +1302,18 @@ claude --version</code></pre>
 </div>
 <script>
 (function(){
+  var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Scroll a target to just below the top edge, in whichever language edition
+     is currently visible. */
+  function scrollToVisible(selector){
+    var el = document.querySelector('.lang:not([hidden]) ' + selector);
+    if(!el) return;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - 24;
+    if(prefersReducedMotion) window.scrollTo(0, top);
+    else window.scrollTo({top: top, behavior: 'smooth'});
+  }
+
   /* ----- Platform choice (one chooser per language, kept in sync) ----- */
   var PLATFORMS = ['mac', 'win'];
   var choosers = Array.prototype.slice.call(document.querySelectorAll('.choices'));
@@ -1317,10 +1329,9 @@ claude --version</code></pre>
       });
     });
     try { localStorage.setItem('platform', platform); } catch(e){}
-    if(scroll){
-      var visible = document.querySelector('.lang:not([hidden]) .platform-panel.active');
-      if(visible) visible.scrollIntoView({block:'start', behavior:'smooth'});
-    }
+    /* Land on the path chooser, which sits between here and the guide - scrolling
+       to the guide itself would carry the reader straight past that choice. */
+    if(scroll) scrollToVisible('.modes');
   }
 
   choosers.forEach(function(list){
@@ -1383,10 +1394,7 @@ claude --version</code></pre>
       });
     });
     try { localStorage.setItem('mode', mode); } catch(e){}
-    if(scroll){
-      var visible = document.querySelector('.lang:not([hidden]) .platform-panel.active .mode-panel.active');
-      if(visible) visible.scrollIntoView({block:'start', behavior:'smooth'});
-    }
+    if(scroll) scrollToVisible('.platform-panel.active .mode-panel.active');
   }
   document.querySelectorAll('[data-mode-btn]').forEach(function(btn){
     btn.addEventListener('click', function(){ selectMode(btn.getAttribute('data-mode-btn'), true); });
