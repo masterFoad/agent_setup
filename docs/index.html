@@ -786,13 +786,25 @@ eval "$(brew shellenv)"</code></pre>
         <p>Then close and reopen Terminal.</p>
         <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
 
+        <h3>GitHub CLI</h3>
+        <pre><code>brew install gh</code></pre>
+
+        <h3>Supabase CLI</h3>
+        <pre><code>brew install supabase/tap/supabase</code></pre>
+
+        <h3>Vercel CLI</h3>
+        <pre><code>npm install -g vercel</code></pre>
+
         <h3>Check everything</h3>
         <pre><code>git --version
 node --version
 npm --version
 python3 --version
 pip3 --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       </div>
     </details>
     </div>
@@ -986,13 +998,28 @@ if ($userPath -notlike "*$claudeDir*") {
     [Environment]::SetEnvironmentVariable("Path", "$userPath;$claudeDir", "User")
 }</code></pre>
 
+        <h3>GitHub CLI</h3>
+        <pre><code>winget install --id GitHub.cli --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3>Supabase CLI</h3>
+        <p>Supabase only supports Scoop on Windows. Run the first line only if <code class="inline">scoop</code> is missing — it installs into your own user folder and asks for no permissions. If this whole block fails, skip it: you can run Supabase per-project with <code class="inline">npx supabase</code> instead.</p>
+        <pre><code>irm get.scoop.sh | iex
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase</code></pre>
+
+        <h3>Vercel CLI</h3>
+        <pre><code>npm install -g vercel</code></pre>
+
         <h3>Check everything</h3>
         <pre><code>git --version
 node --version
 npm --version
 python --version
 pip --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       </div>
     </details>
     </div>
@@ -1218,13 +1245,25 @@ eval "$(brew shellenv)"</code></pre>
         <p>ثم أغلق <bdi>Terminal</bdi> وافتحه من جديد.</p>
         <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
 
+        <h3><bdi>GitHub CLI</bdi></h3>
+        <pre><code>brew install gh</code></pre>
+
+        <h3><bdi>Supabase CLI</bdi></h3>
+        <pre><code>brew install supabase/tap/supabase</code></pre>
+
+        <h3><bdi>Vercel CLI</bdi></h3>
+        <pre><code>npm install -g vercel</code></pre>
+
         <h3>تحقّق من كل شيء</h3>
         <pre><code>git --version
 node --version
 npm --version
 python3 --version
 pip3 --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       </div>
     </details>
     </div>
@@ -1418,13 +1457,28 @@ if ($userPath -notlike "*$claudeDir*") {
     [Environment]::SetEnvironmentVariable("Path", "$userPath;$claudeDir", "User")
 }</code></pre>
 
+        <h3><bdi>GitHub CLI</bdi></h3>
+        <pre><code>winget install --id GitHub.cli --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3><bdi>Supabase CLI</bdi></h3>
+        <p>لا تدعم <bdi>Supabase</bdi> على ويندوز سوى <bdi>Scoop</bdi>. شغّل السطر الأول فقط إذا كان <code class="inline">scoop</code> غير مثبّت — فهو يثبَّت داخل مجلد المستخدم ولا يطلب أي أذونات. وإذا فشلت هذه الكتلة كلها فتجاوزها: يمكنك تشغيل <bdi>Supabase</bdi> داخل المشروع عبر <code class="inline">npx supabase</code>.</p>
+        <pre><code>irm get.scoop.sh | iex
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase</code></pre>
+
+        <h3><bdi>Vercel CLI</bdi></h3>
+        <pre><code>npm install -g vercel</code></pre>
+
         <h3>تحقّق من كل شيء</h3>
         <pre><code>git --version
 node --version
 npm --version
 python --version
 pip --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       </div>
     </details>
     </div>
