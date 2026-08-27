@@ -5,10 +5,15 @@ param(
 
 <#
 FOAD Dev Setup - Windows  (workshop edition, written for absolute beginners)
-Installs: Git, Node.js LTS/npm, Google Antigravity IDE, Python 3, Claude Code, and beginner Claude Code skill files.
+Installs: Git, Node.js LTS/npm, Google Antigravity IDE, Python 3, Claude Code,
+  the GitHub/Supabase/Vercel CLIs, and beginner Claude Code skill files.
+
+  This script NEVER signs anyone in. Service logins are interactive, need an
+  account that may not exist yet, and would hang an unattended run - they are a
+  separate step the person does themselves afterwards.
 Run from PowerShell. Reruns preserve existing workshop files.
 Pinned workshop source:
-Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
+Invoke-WebRequest https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-windows.ps1 -OutFile $env:TEMP\foad-install-windows.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File $env:TEMP\foad-install-windows.ps1
 
 Last verified against official sources: 2026-08-27
@@ -26,7 +31,7 @@ Instructor notes:
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$script:InstallerVersion = "2.1.3"
+$script:InstallerVersion = "2.1.4"
 $script:GuideFileName = "FOAD-terminal-basics-v$($script:InstallerVersion).txt"
 
 # ---------------------------------------------------------------------------
@@ -36,7 +41,7 @@ $script:GuideFileName = "FOAD-terminal-basics-v$($script:InstallerVersion).txt"
 $script:Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $script:Summary = [ordered]@{}   # name -> @{ Status = "OK"|"WARN"|"FAIL"; Hint = "..." }
 $script:PhaseNum = 0
-$script:PhaseTotal = 8
+$script:PhaseTotal = 9
 
 function Phase([string]$Title, [string]$PlainExplanation) {
     $script:PhaseNum++
@@ -138,7 +143,8 @@ function Refresh-PathForCurrentSession {
         (Join-Path $HOME "AppData\Roaming\npm"),
         (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Packages"),
         (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Links"),
-        (Join-Path $HOME "AppData\Local\Microsoft\WindowsApps")
+        (Join-Path $HOME "AppData\Local\Microsoft\WindowsApps"),
+        (Join-Path $HOME "scoop\shims")
     )
 
     # winget's Python often does not add itself to PATH; find per-user installs
@@ -363,6 +369,70 @@ function Install-FirstAvailableWingetPackage([string[]]$Ids, [string]$Name, [str
 # ---------------------------------------------------------------------------
 # Claude Code
 # ---------------------------------------------------------------------------
+
+function Install-NpmGlobalPackage([string]$Package, [string]$Name, [string]$CommandName) {
+    Step "Installing $Name"
+
+    if (Check-CommandVersion $CommandName) {
+        Ensure-CommandOnPersistentPath $CommandName | Out-Null
+        Ok "$Name is already installed."
+        return $true
+    }
+    if (-not (Resolve-ExternalCommand "npm")) {
+        FailMsg "npm is not available, so $Name could not be installed."
+        return $false
+    }
+
+    try {
+        npm install -g $Package
+        Refresh-PathForCurrentSession
+        if (Check-CommandVersion $CommandName) {
+            Ensure-CommandOnPersistentPath $CommandName | Out-Null
+            Ok "$Name installed."
+            return $true
+        }
+        throw "npm finished but $CommandName did not answer."
+    } catch {
+        FailMsg "Could not install $Name`: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Install-SupabaseCli {
+    # Supabase documents Scoop as the only supported Windows install: there is no
+    # winget package and no global npm install. Scoop installs into the user
+    # profile, so this needs no administrator approval.
+    Step "Installing Supabase CLI"
+
+    if (Check-CommandVersion "supabase") {
+        Ensure-CommandOnPersistentPath "supabase" | Out-Null
+        Ok "Supabase CLI is already installed."
+        return $true
+    }
+
+    try {
+        if (-not (Resolve-ExternalCommand "scoop")) {
+            Step "Installing Scoop (Supabase's Windows installer)"
+            Invoke-RestMethod -Uri "https://get.scoop.sh" -UseBasicParsing | Invoke-Expression
+            Refresh-PathForCurrentSession
+        }
+        if (-not (Resolve-ExternalCommand "scoop")) { throw "Scoop is still unavailable." }
+
+        scoop bucket add supabase https://github.com/supabase/scoop-bucket.git 2>&1 | Out-Null
+        scoop install supabase
+        Refresh-PathForCurrentSession
+        if (Check-CommandVersion "supabase") {
+            Ensure-CommandOnPersistentPath "supabase" | Out-Null
+            Ok "Supabase CLI installed."
+            return $true
+        }
+        throw "Scoop finished but 'supabase' did not answer."
+    } catch {
+        FailMsg "Could not install the Supabase CLI: $($_.Exception.Message)"
+        Warn "Install it later with Scoop, or run it per-project with: npx supabase"
+        return $false
+    }
+}
 
 function Install-ClaudeCodeNative {
     Step "Installing Claude Code"
@@ -802,6 +872,16 @@ Phase "Installing Claude Code" "The AI coding assistant - the star of this works
 $ccOk = Install-ClaudeCodeNative
 Record "Claude Code" $(if ($ccOk) { "OK" } else { "FAIL" }) "Close PowerShell, reopen it, run the setup command again. Manual install: https://code.claude.com/docs/en/setup"
 
+Phase "Installing service CLIs" "Command-line tools for GitHub, Supabase and Vercel. Signing in comes later, and you do that part yourself."
+$ghOk = Install-WingetPackage -Id "GitHub.cli" -Name "GitHub CLI"
+Record "GitHub CLI" $(if ($ghOk) { "OK" } else { "FAIL" }) "Rerun setup, or install GitHub CLI from https://cli.github.com"
+Refresh-PathForCurrentSession
+$sbOk = Install-SupabaseCli
+Record "Supabase CLI" $(if ($sbOk) { "OK" } else { "FAIL" }) "Rerun setup, or run it per-project with: npx supabase"
+$vcOk = Install-NpmGlobalPackage -Package "vercel" -Name "Vercel CLI" -CommandName "vercel"
+Record "Vercel CLI" $(if ($vcOk) { "OK" } else { "FAIL" }) "Rerun setup, or install with: npm install -g vercel"
+Refresh-PathForCurrentSession
+
 Phase "Creating workshop files" "A starter Claude skill, a starter command, and a cheat-sheet on your Desktop."
 try {
     Write-ClaudeStarterFiles
@@ -826,6 +906,9 @@ Record "npm works in a new PowerShell"    $(if (Check-CommandVersion "npm" -Pers
 Record "python works in a new PowerShell" $(if (Check-PythonVersion -PersistentPathOnly)            { "OK" } else { "FAIL" }) "Open a new PowerShell and try: python --version (or: py --version)"
 Record "pip works in a new PowerShell"    $(if (Check-CommandVersion "pip" -PersistentPathOnly)    { "OK" } else { "FAIL" }) "Open a new PowerShell and try: pip --version"
 Record "claude works in a new PowerShell" $(if (Check-CommandVersion "claude" -PersistentPathOnly) { "OK" } else { "FAIL" }) "Rerun setup. If it still fails, send FOAD-setup-log.txt to the instructor."
+Record "gh works in a new PowerShell"       $(if (Check-CommandVersion "gh" -PersistentPathOnly)       { "OK" } else { "FAIL" }) "Open a new PowerShell and try: gh --version"
+Record "supabase works in a new PowerShell" $(if (Check-CommandVersion "supabase" -PersistentPathOnly) { "OK" } else { "FAIL" }) "Open a new PowerShell and try: supabase --version"
+Record "vercel works in a new PowerShell"   $(if (Check-CommandVersion "vercel" -PersistentPathOnly)   { "OK" } else { "FAIL" }) "Open a new PowerShell and try: vercel --version"
 
 $hasFailure = $script:Summary.Values | Where-Object { $_.Status -eq "FAIL" } | Select-Object -First 1
 Show-Summary
@@ -853,7 +936,9 @@ Write-Host "4. Open 'Antigravity IDE' from the Start Menu." -ForegroundColor Whi
 Write-Host "   (NOT the app called just 'Antigravity' - that is a different app!)" -ForegroundColor White
 Write-Host "   WSL IS NOT REQUIRED. If Antigravity asks about WSL, choose Skip/Cancel." -ForegroundColor Yellow
 Write-Host "   In its terminal menu choose: Select Default Profile -> PowerShell." -ForegroundColor Yellow
-Write-Host "5. Read the cheat-sheet on your Desktop: $($script:GuideFileName)" -ForegroundColor White
+Write-Host "5. Sign in to your accounts. The setup page lists the commands:" -ForegroundColor White
+Write-Host "   gh auth login   |   supabase login   |   vercel login" -ForegroundColor White
+Write-Host "6. Read the cheat-sheet on your Desktop: $($script:GuideFileName)" -ForegroundColor White
 Write-Host ""
 
 # Open the cheat-sheet automatically the first time so students actually see it.

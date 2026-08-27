@@ -2,9 +2,9 @@
 
 Beginner-oriented Windows and macOS setup for a supervised FOAD workshop.
 
-Version: **2.1.3**
+Version: **2.1.4**
 
-Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a starter Claude command/skill, and a terminal guide.
+Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, the GitHub/Supabase/Vercel CLIs, a starter Claude command/skill, and a terminal guide.
 
 ---
 
@@ -13,6 +13,7 @@ Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a st
 - [Before interns start](#before-interns-start)
 - [Recommended distribution](#recommended-distribution)
 - [Intern-facing setup page](#intern-facing-setup-page)
+- [What the installers will and will not do](#what-the-installers-will-and-will-not-do)
 - [Supervised source installation](#supervised-source-installation)
 - [macOS — step by step](#macos--step-by-step)
   - [macOS — worst case: install everything by hand](#macos--worst-case-install-everything-by-hand)
@@ -47,7 +48,7 @@ For interns, use a **versioned, signed release** distributed by the instructor. 
 
 The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
-Until signed `v2.1.3` binaries are published, use the pinned source scripts below only in a supervised setup session.
+Until signed `v2.1.4` binaries are published, use the pinned source scripts below only in a supervised setup session.
 
 ## Intern-facing setup page
 
@@ -60,9 +61,47 @@ The page is served from [`docs/index.html`](docs/index.html) on `main`. It pins
 the same tagged commands documented below, so update it whenever the version
 changes.
 
+## What the installers will and will not do
+
+The installers install **tools**. They never **authenticate**. Service logins
+(`gh auth login`, `supabase login`, `vercel login`) are a separate step the
+intern does themselves, listed at the end of the setup page.
+
+This split is deliberate:
+
+- An interactive login blocks on stdin and opens a browser mid-run. That breaks
+  the "paste it and walk away" promise and leaves beginners staring at a
+  terminal that looks hung.
+- A missing login is not a failed install. Folding it into the summary would
+  turn the red/green signal — which currently means "rerun the setup" — into
+  noise.
+- Reruns are safe because installs are idempotent. Re-triggering three OAuth
+  flows on every rerun would not be.
+- The real blocker is **account creation**, which no script can do. Interns need
+  GitHub, Supabase and Vercel accounts before the workshop.
+
+Never add a login, token capture, or credential prompt to these scripts.
+
+### Service CLI install methods
+
+| CLI | macOS | Windows |
+|-----|-------|---------|
+| GitHub | `brew install gh` | `winget install --id GitHub.cli` |
+| Supabase | `brew install supabase/tap/supabase` | Scoop only — the installer bootstraps Scoop if missing |
+| Vercel | `npm install -g vercel` | `npm install -g vercel` |
+
+Supabase publishes no WinGet package and does not offer a global npm install, so
+Scoop is the only supported Windows path ([CLI docs](https://supabase.com/docs/guides/local-development/cli/getting-started)).
+Scoop installs into the user profile and needs no administrator approval. If it
+fails, the installer tells the intern to use `npx supabase` per project instead.
+
+Because npm's global bin and Scoop's shims are not guaranteed to be on the
+persistent user PATH, the Windows installer runs `Ensure-CommandOnPersistentPath`
+for both, so the final new-shell check can actually find them.
+
 ## Supervised source installation
 
-These commands pin FOAD's installer to the versioned [`v2.1.3`](https://github.com/masterFoad/agent_setup/releases/tag/v2.1.3) tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
+These commands pin FOAD's installer to the versioned [`v2.1.4`](https://github.com/masterFoad/agent_setup/releases/tag/v2.1.4) tag and download it before execution. Published tags must never be moved. The scripts still use official package managers and official vendor installers, so review release notes before each workshop.
 
 ### Windows
 
@@ -70,7 +109,7 @@ Open PowerShell:
 
 ```powershell
 $path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path
 ```
 
@@ -83,7 +122,7 @@ The installer now verifies Claude using only the PATH that a genuinely new Power
 Open Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
+curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh
 ```
 
@@ -217,7 +256,7 @@ Run the [Windows command](#windows) above. The installer then performs these ste
 | 7 | Install Antigravity IDE | `winget install --id Google.AntigravityIDE`. This is the **big** download and can look frozen — it is not. Fallback: the [download page](https://antigravity.google/download) opens in your browser. **Note:** `Google.Antigravity` (without `IDE`) is a different app — an agent orchestrator with no editor. Do not install it instead. | [Antigravity](https://antigravity.google/docs/ide/getting-started) |
 | 8 | Install Python 3 + pip | First available of `Python.Python.3.14`, `3.13`, `3.12`. Fallback: the [Python for Windows](https://www.python.org/downloads/windows/) page opens — tick **"Add python.exe to PATH"**. | [python.org](https://www.python.org/downloads/windows/) |
 | 9 | Install Claude Code | Repairs an existing install first (PATH only), then the native installer (`https://claude.ai/install.ps1`, run in a separate PowerShell process), then the `Anthropic.ClaudeCode` WinGet package. Each path must produce a **valid Anthropic Authenticode signature** and a `claude` that resolves on the persistent user PATH, or it is treated as failed. | [Claude Code setup](https://code.claude.com/docs/en/setup) |
-| 10 | Create workshop files | Writes a starter skill to `%USERPROFILE%\.claude\skills\summarize-changes\` and a command to `%USERPROFILE%\.claude\commands\`, plus `Desktop\FOAD-terminal-basics-v2.1.3.txt` (opened in Notepad at the end). | [Skills](https://code.claude.com/docs/en/skills) · [Slash commands](https://code.claude.com/docs/en/slash-commands) |
+| 10 | Create workshop files | Writes a starter skill to `%USERPROFILE%\.claude\skills\summarize-changes\` and a command to `%USERPROFILE%\.claude\commands\`, plus `Desktop\FOAD-terminal-basics-v2.1.4.txt` (opened in Notepad at the end). | [Skills](https://code.claude.com/docs/en/skills) · [Slash commands](https://code.claude.com/docs/en/slash-commands) |
 | 11 | Final check | Re-resolves `git`, `node`, `npm`, `python`/`py`, `pip`, `claude` using **only the persisted machine + user PATH** — i.e. what a genuinely new PowerShell window will see — then prints a summary with a "how to fix" line per failed item. | [Claude Code PATH troubleshooting](https://code.claude.com/docs/en/troubleshoot-install#verify-your-path) |
 
 Windows-specific notes:
@@ -341,6 +380,9 @@ npm --version
 python --version     # Windows
 python3 --version    # macOS
 claude --version
+gh --version
+supabase --version
+vercel --version
 ```
 
 If setup is incomplete, follow the final summary and rerun it. Existing workshop files are preserved, but the setup is not a general-purpose rollback or uninstaller for third-party packages.

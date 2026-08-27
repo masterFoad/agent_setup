@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # FOAD Dev Setup - macOS
-# Version 2.1.3
+# Version 2.1.4
 #
 # Installs: Homebrew, Git, Node.js/npm, Python 3, Google Antigravity IDE,
-# Claude Code, and beginner starter files. Reruns preserve existing workshop files.
+# Claude Code, the GitHub/Supabase/Vercel CLIs, and beginner starter files.
+# Reruns preserve existing workshop files.
+#
+# This script NEVER signs anyone in. Service logins are interactive, need an
+# account that may not exist yet, and would hang an unattended run - they are a
+# separate step the person does themselves afterwards.
 #
 # Website command:
-# curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
+# curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-mac.sh -o /tmp/foad-install-mac.sh
 # /bin/bash /tmp/foad-install-mac.sh
 #
 # WORKSHOP INSTRUCTOR NOTES:
@@ -22,8 +27,8 @@
 
 set -u
 
-SCRIPT_VERSION="2.1.3"
-TOTAL_STEPS=11
+SCRIPT_VERSION="2.1.4"
+TOTAL_STEPS=15
 STEP_NUM=0
 SUMMARY_NOTE=""
 
@@ -236,7 +241,7 @@ install_homebrew() {
     echo "Do not run this installer using 'curl ... | bash'."
     echo ""
     echo "Run this exact command in Apple's Terminal app:"
-    echo 'curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh'
+    echo 'curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-mac.sh -o /tmp/foad-install-mac.sh'
     echo '/bin/bash /tmp/foad-install-mac.sh'
     echo ""
     stop_setup \
@@ -361,6 +366,38 @@ install_first_available_cask() {
   warn "$name was not installed. Opening its official download page instead."
   record FAIL "$name (manual installation needed)"
   open "$fallback_url" >/dev/null 2>&1 || true
+  return 1
+}
+
+install_npm_global() {
+  local package="$1"
+  local name="$2"
+  local command_name="$3"
+
+  step "Installing $name"
+
+  if command -v "$command_name" >/dev/null 2>&1; then
+    ok "$name is already installed."
+    record OK "$name"
+    return 0
+  fi
+
+  if ! command -v npm >/dev/null 2>&1; then
+    fail "npm is not available, so $name could not be installed."
+    record FAIL "$name (needs Node.js)"
+    return 1
+  fi
+
+  # Never with sudo: a root-owned npm prefix breaks later user-level installs.
+  if npm install -g "$package"; then
+    hash -r 2>/dev/null || true
+    ok "$name installed."
+    record OK "$name"
+    return 0
+  fi
+
+  fail "Could not install $name with npm."
+  record FAIL "$name"
   return 1
 }
 
@@ -776,6 +813,13 @@ install_first_available_cask \
   "antigravity-ide" || true
 
 install_claude_code || true
+
+# Service CLIs. These only ever get installed here - signing in is a separate,
+# interactive job the person does themselves after setup.
+install_brew_formula "gh" "GitHub CLI" || true
+install_brew_formula "supabase/tap/supabase" "Supabase CLI" || true
+install_npm_global "vercel" "Vercel CLI" "vercel" || true
+
 write_claude_starter_files || true
 write_terminal_guide || true
 
@@ -793,6 +837,9 @@ check_command_version npm "npm" || true
 check_command_version python3 "Python 3" || true
 check_command_version pip3 "pip3" || true
 check_command_version claude "Claude Code" || true
+check_command_version gh "GitHub CLI" || true
+check_command_version supabase "Supabase CLI" || true
+check_command_version vercel "Vercel CLI" || true
 
 print_summary
 
@@ -807,7 +854,9 @@ else
   echo "2. Run: claude"
   echo "3. Follow the browser login instructions."
   echo "4. Open Google Antigravity IDE from Applications and sign in."
-  echo "5. Read FOAD-terminal-basics.txt on your Desktop."
+  echo "5. Sign in to your accounts - the setup page lists the commands:"
+  echo "   gh auth login   |   supabase login   |   vercel login"
+  echo "6. Read FOAD-terminal-basics.txt on your Desktop."
 fi
 
 echo ""

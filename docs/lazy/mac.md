@@ -19,9 +19,15 @@ Do not reinstall it.
 5. **Antigravity IDE** — `brew install --cask antigravity-ide`. If that cask is
    unavailable, tell them to download it from https://antigravity.google/download
    and continue with the rest.
+6. **GitHub CLI** — `brew install gh`
+7. **Supabase CLI** — `brew install supabase/tap/supabase`
+8. **Vercel CLI** — `npm install -g vercel`
 
 ## Rules
 
+- **Do not sign them in to anything.** `gh auth login`, `supabase login` and
+  `vercel login` all need a browser and an account that may not exist yet. Leave
+  those to the person; you only install.
 - Never use `sudo`. Homebrew must be installed from the normal user account.
 - Skip anything already installed. Check first, install only what is missing.
 - If a step fails, say so plainly, try the documented fallback once, and move on
@@ -43,7 +49,15 @@ node --version     <output>
 npm --version      <output>
 python3 --version  <output>
 claude --version   <output>
+gh --version       <output>
+supabase --version <output>
+vercel --version   <output>
 Antigravity IDE    installed
+
+Still to do (you have to do these yourself, they open a browser):
+gh auth login        then check with: gh auth status
+supabase login       then check with: supabase projects list
+vercel login         then check with: vercel whoami
 ```
 
 If any line is missing or failed, print it as `FAILED` with a one-sentence

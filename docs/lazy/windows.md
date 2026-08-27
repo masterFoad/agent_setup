@@ -26,9 +26,21 @@ any of it, even if one is available.
    with the same WinGet flags. Stop at the first that succeeds. If all fail, tell
    them to install from https://www.python.org/downloads/windows/ and to tick
    **Add python.exe to PATH**.
+6. **GitHub CLI** — `winget install --id GitHub.cli --exact --source winget --accept-package-agreements --accept-source-agreements`
+7. **Supabase CLI** — Supabase supports only Scoop on Windows: there is no WinGet
+   package and no global npm install. If `scoop` is missing, install it first with
+   `irm get.scoop.sh | iex` (it installs into the user profile and needs no
+   administrator approval), then
+   `scoop bucket add supabase https://github.com/supabase/scoop-bucket.git` and
+   `scoop install supabase`. If this fails, say so and tell them they can run it
+   per-project with `npx supabase` instead — then carry on.
+8. **Vercel CLI** — `npm install -g vercel`
 
 ## Rules
 
+- **Do not sign them in to anything.** `gh auth login`, `supabase login` and
+  `vercel login` all need a browser and an account that may not exist yet. Leave
+  those to the person; you only install.
 - Skip anything already installed. Check first, install only what is missing.
 - A Windows permission box may appear behind other windows. If a command seems
   to hang, tell them to check the taskbar for it.
@@ -53,7 +65,15 @@ node --version     <output>
 npm --version      <output>
 python --version   <output>
 claude --version   <output>
+gh --version       <output>
+supabase --version <output>
+vercel --version   <output>
 Antigravity IDE    installed
+
+Still to do (you have to do these yourself, they open a browser):
+gh auth login        then check with: gh auth status
+supabase login       then check with: supabase projects list
+vercel login         then check with: vercel whoami
 ```
 
 If any line is missing or failed, print it as `FAILED` with a one-sentence

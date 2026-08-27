@@ -473,6 +473,9 @@
   .step h3{font-size:17px;margin:22px 0 6px;font-weight:700;}
   .step p{margin-bottom:14px;}
 
+  /* The sign-in step closes both paths, so it gets its own heavier rule. */
+  .step.signin{border-top:2px solid var(--rule);margin-top:34px;}
+
   /* ---------- Kit list ---------- */
   ul.kit{list-style:none;margin:18px 0 8px;padding:0;}
   ul.kit li{
@@ -636,13 +639,14 @@
 
     <section class="step">
       <span class="step-n">What you're installing</span>
-      <h2>Five tools, all free</h2>
+      <h2>Everything you need, all free</h2>
       <ul class="kit">
         <li><span class="kit-name">Claude Code</span><span class="kit-what">the AI assistant you'll work with all day</span></li>
         <li><span class="kit-name">Antigravity IDE</span><span class="kit-what">the app you'll write code in</span></li>
         <li><span class="kit-name">Git</span><span class="kit-what">keeps a history of your work, like unlimited undo</span></li>
         <li><span class="kit-name">Node.js</span><span class="kit-what">runs JavaScript projects on your machine</span></li>
         <li><span class="kit-name">Python</span><span class="kit-what">runs the scripts Claude writes for you</span></li>
+        <li><span class="kit-name">gh, supabase, vercel</span><span class="kit-what">command-line tools for GitHub, Supabase and Vercel</span></li>
       </ul>
       <p>Homebrew comes along too — it's the helper that installs the rest. One command sets up everything.</p>
     </section>
@@ -687,7 +691,15 @@ node --version     v22.20.0
 npm --version      10.9.3
 python3 --version  Python 3.14.0
 claude --version   2.1.4
-Antigravity IDE    installed</code></pre>
+gh --version       2.83.0
+supabase --version 2.62.4
+vercel --version   52.1.0
+Antigravity IDE    installed
+
+Still to do (these open a browser):
+gh auth login
+supabase login
+vercel login</code></pre>
         <p>If something didn't work, Claude says <strong>NOT FINISHED</strong> instead and tells you which one and what to do. Quit Terminal and open a fresh window, then open <strong>Antigravity IDE</strong> from your Applications folder and sign in with your Google account.</p>
       </section>
     </div>
@@ -700,7 +712,7 @@ Antigravity IDE    installed</code></pre>
       <h2>Run the setup</h2>
       <p>Copy this, paste it into Terminal, and press Enter.</p>
       <div class="code-label">Terminal</div>
-      <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
+      <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh</code></pre>
       <p>It shows you what it's about to install and waits. Press Enter again to let it go, then leave it alone — it runs for a while, asks for your Mac password along the way, and finishes with a summary.</p>
       <div class="note">
@@ -718,7 +730,10 @@ Antigravity IDE    installed</code></pre>
 node --version
 npm --version
 python3 --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       <p>Every line should print a version number. If one doesn't, run the Step 1 command again — it picks up where it left off and skips whatever already worked.</p>
     </section>
 
@@ -781,6 +796,33 @@ claude --version</code></pre>
       </div>
     </details>
     </div>
+
+    <section class="step signin">
+      <span class="step-n">Last thing</span>
+      <h2>Sign in to your accounts</h2>
+      <p>The setup installs these tools but can't log in as you — each one opens a browser. Do them one at a time. You need an account on each service first, so make those before the workshop if you haven't.</p>
+
+      <h3>GitHub</h3>
+      <p>Pick <strong>HTTPS</strong> and <strong>log in with a web browser</strong> when it asks. This also lets you push code without typing a password every time.</p>
+      <pre><code>gh auth login</code></pre>
+      <p>Check it worked:</p>
+      <pre><code>gh auth status</code></pre>
+
+      <h3>Supabase</h3>
+      <pre><code>supabase login</code></pre>
+      <p>Check it worked:</p>
+      <pre><code>supabase projects list</code></pre>
+
+      <h3>Vercel</h3>
+      <pre><code>vercel login</code></pre>
+      <p>Check it worked — it should print your username:</p>
+      <pre><code>vercel whoami</code></pre>
+
+      <div class="note">
+        <span class="note-tag">If one of them fails</span>
+        Skip it and carry on with the others. These are independent — a failed Vercel login doesn't affect GitHub or Supabase, and you can come back to it.
+      </div>
+    </section>
   </div>
 
   <!-- ================= WINDOWS ================= -->
@@ -788,13 +830,14 @@ claude --version</code></pre>
 
     <section class="step">
       <span class="step-n">What you're installing</span>
-      <h2>Five tools, all free</h2>
+      <h2>Everything you need, all free</h2>
       <ul class="kit">
         <li><span class="kit-name">Claude Code</span><span class="kit-what">the AI assistant you'll work with all day</span></li>
         <li><span class="kit-name">Antigravity IDE</span><span class="kit-what">the app you'll write code in</span></li>
         <li><span class="kit-name">Git</span><span class="kit-what">keeps a history of your work, like unlimited undo</span></li>
         <li><span class="kit-name">Node.js</span><span class="kit-what">runs JavaScript projects on your machine</span></li>
         <li><span class="kit-name">Python</span><span class="kit-what">runs the scripts Claude writes for you</span></li>
+        <li><span class="kit-name">gh, supabase, vercel</span><span class="kit-what">command-line tools for GitHub, Supabase and Vercel</span></li>
       </ul>
       <p>Windows installs these through its own app installer, so official Microsoft download windows will go by.</p>
     </section>
@@ -839,7 +882,15 @@ node --version     v22.20.0
 npm --version      10.9.3
 python --version   Python 3.14.0
 claude --version   2.1.4
-Antigravity IDE    installed</code></pre>
+gh --version       2.83.0
+supabase --version 2.62.4
+vercel --version   52.1.0
+Antigravity IDE    installed
+
+Still to do (these open a browser):
+gh auth login
+supabase login
+vercel login</code></pre>
         <p>If something didn't work, Claude says <strong>NOT FINISHED</strong> instead and tells you which one and what to do. Close PowerShell and open a fresh window, then open <strong>Antigravity IDE</strong> from the Start Menu and sign in with your Google account. If it offers to install WSL, choose Skip — and pick the <strong>PowerShell</strong> profile in its terminal.</p>
       </section>
     </div>
@@ -853,7 +904,7 @@ Antigravity IDE    installed</code></pre>
       <p>Copy this, paste it into PowerShell, and press Enter.</p>
       <div class="code-label">PowerShell</div>
       <pre><code>$path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
       <p>It shows you what it's about to install and waits. Press Enter again to let it go, then leave it alone — it runs for a while and finishes with a summary.</p>
       <div class="note">
@@ -871,7 +922,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
 node --version
 npm --version
 python --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       <p>Every line should print a version number. If one doesn't, run the Step 1 command again — it picks up where it left off and skips whatever already worked.</p>
     </section>
 
@@ -942,6 +996,33 @@ claude --version</code></pre>
       </div>
     </details>
     </div>
+
+    <section class="step signin">
+      <span class="step-n">Last thing</span>
+      <h2>Sign in to your accounts</h2>
+      <p>The setup installs these tools but can't log in as you — each one opens a browser. Do them one at a time. You need an account on each service first, so make those before the workshop if you haven't.</p>
+
+      <h3>GitHub</h3>
+      <p>Pick <strong>HTTPS</strong> and <strong>log in with a web browser</strong> when it asks. This also lets you push code without typing a password every time.</p>
+      <pre><code>gh auth login</code></pre>
+      <p>Check it worked:</p>
+      <pre><code>gh auth status</code></pre>
+
+      <h3>Supabase</h3>
+      <pre><code>supabase login</code></pre>
+      <p>Check it worked:</p>
+      <pre><code>supabase projects list</code></pre>
+
+      <h3>Vercel</h3>
+      <pre><code>vercel login</code></pre>
+      <p>Check it worked — it should print your username:</p>
+      <pre><code>vercel whoami</code></pre>
+
+      <div class="note">
+        <span class="note-tag">If one of them fails</span>
+        Skip it and carry on with the others. These are independent — a failed Vercel login doesn't affect GitHub or Supabase, and you can come back to it.
+      </div>
+    </section>
   </div>
 </div>
 
@@ -990,13 +1071,14 @@ claude --version</code></pre>
 
     <section class="step">
       <span class="step-n">ما الذي ستثبّته</span>
-      <h2>خمس أدوات، جميعها مجانية</h2>
+      <h2>كل ما تحتاجه، وكله مجاني</h2>
       <ul class="kit">
         <li><span class="kit-name"><bdi>Claude Code</bdi></span><span class="kit-what">المساعد الذكي الذي ستعمل معه طوال اليوم</span></li>
         <li><span class="kit-name"><bdi>Antigravity IDE</bdi></span><span class="kit-what">التطبيق الذي ستكتب فيه الشيفرة</span></li>
         <li><span class="kit-name"><bdi>Git</bdi></span><span class="kit-what">يحفظ تاريخ عملك، أشبه بتراجع بلا حدود</span></li>
         <li><span class="kit-name"><bdi>Node.js</bdi></span><span class="kit-what">يشغّل مشاريع جافاسكربت على جهازك</span></li>
         <li><span class="kit-name"><bdi>Python</bdi></span><span class="kit-what">يشغّل السكربتات التي يكتبها لك <bdi>Claude</bdi></span></li>
+        <li><span class="kit-name"><bdi>gh, supabase, vercel</bdi></span><span class="kit-what">أدوات سطر الأوامر لـ<bdi>GitHub</bdi> و<bdi>Supabase</bdi> و<bdi>Vercel</bdi></span></li>
       </ul>
       <p>ويأتي معها <bdi>Homebrew</bdi>، وهو الأداة التي تثبّت البقية. أمر واحد يهيّئ كل شيء.</p>
     </section>
@@ -1041,7 +1123,15 @@ node --version     v22.20.0
 npm --version      10.9.3
 python3 --version  Python 3.14.0
 claude --version   2.1.4
-Antigravity IDE    installed</code></pre>
+gh --version       2.83.0
+supabase --version 2.62.4
+vercel --version   52.1.0
+Antigravity IDE    installed
+
+Still to do (these open a browser):
+gh auth login
+supabase login
+vercel login</code></pre>
         <p>وإن لم ينجح شيء ما، سيكتب <strong>NOT FINISHED</strong> بدلًا منها ويخبرك أيّها وما العمل. أغلق <bdi>Terminal</bdi> وافتح نافذة جديدة، ثم افتح <strong><bdi>Antigravity IDE</bdi></strong> من مجلد التطبيقات وسجّل الدخول بحساب Google.</p>
       </section>
     </div>
@@ -1054,7 +1144,7 @@ Antigravity IDE    installed</code></pre>
       <h2>شغّل التثبيت</h2>
       <p>انسخ هذا، ألصقه في <bdi>Terminal</bdi>، واضغط Enter.</p>
       <div class="code-label"><bdi>Terminal</bdi></div>
-      <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
+      <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh</code></pre>
       <p>سيعرض لك ما سيثبّته ثم ينتظر. اضغط Enter مرة أخرى للمتابعة، ثم اتركه يعمل — يستغرق وقتًا، وقد يطلب كلمة مرور جهازك في أثنائه، وينتهي بملخّص.</p>
       <div class="note">
@@ -1072,7 +1162,10 @@ Antigravity IDE    installed</code></pre>
 node --version
 npm --version
 python3 --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       <p>يجب أن يطبع كل سطر رقم إصدار. إن لم يفعل أحدها، أعد تشغيل أمر الخطوة ١ — فهو يكمل من حيث توقّف ويتجاوز ما نجح سابقًا.</p>
     </section>
 
@@ -1135,6 +1228,33 @@ claude --version</code></pre>
       </div>
     </details>
     </div>
+
+    <section class="step signin">
+      <span class="step-n">آخر خطوة</span>
+      <h2>سجّل الدخول إلى حساباتك</h2>
+      <p>يثبّت الإعداد هذه الأدوات لكنه لا يستطيع تسجيل دخولك — كل واحدة منها تفتح المتصفح. نفّذها واحدة تلو الأخرى. وتحتاج حسابًا في كل خدمة أولًا، فأنشئها قبل الورشة إن لم تكن قد فعلت.</p>
+
+      <h3><bdi>GitHub</bdi></h3>
+      <p>اختر <strong><bdi>HTTPS</bdi></strong> ثم <strong>تسجيل الدخول عبر المتصفح</strong> عندما يسألك. هذا يتيح لك أيضًا رفع الشيفرة دون كتابة كلمة مرور في كل مرة.</p>
+      <pre><code>gh auth login</code></pre>
+      <p>تحقّق من نجاحها:</p>
+      <pre><code>gh auth status</code></pre>
+
+      <h3><bdi>Supabase</bdi></h3>
+      <pre><code>supabase login</code></pre>
+      <p>تحقّق من نجاحها:</p>
+      <pre><code>supabase projects list</code></pre>
+
+      <h3><bdi>Vercel</bdi></h3>
+      <pre><code>vercel login</code></pre>
+      <p>تحقّق من نجاحها — يجب أن تطبع اسم المستخدم:</p>
+      <pre><code>vercel whoami</code></pre>
+
+      <div class="note">
+        <span class="note-tag">إذا فشلت إحداها</span>
+        تجاوزها وأكمل البقية. فهي مستقلة عن بعضها — فشل تسجيل الدخول إلى <bdi>Vercel</bdi> لا يؤثر على <bdi>GitHub</bdi> أو <bdi>Supabase</bdi>، ويمكنك العودة إليها لاحقًا.
+      </div>
+    </section>
   </div>
 
   <!-- ================= WINDOWS ================= -->
@@ -1142,13 +1262,14 @@ claude --version</code></pre>
 
     <section class="step">
       <span class="step-n">ما الذي ستثبّته</span>
-      <h2>خمس أدوات، جميعها مجانية</h2>
+      <h2>كل ما تحتاجه، وكله مجاني</h2>
       <ul class="kit">
         <li><span class="kit-name"><bdi>Claude Code</bdi></span><span class="kit-what">المساعد الذكي الذي ستعمل معه طوال اليوم</span></li>
         <li><span class="kit-name"><bdi>Antigravity IDE</bdi></span><span class="kit-what">التطبيق الذي ستكتب فيه الشيفرة</span></li>
         <li><span class="kit-name"><bdi>Git</bdi></span><span class="kit-what">يحفظ تاريخ عملك، أشبه بتراجع بلا حدود</span></li>
         <li><span class="kit-name"><bdi>Node.js</bdi></span><span class="kit-what">يشغّل مشاريع جافاسكربت على جهازك</span></li>
         <li><span class="kit-name"><bdi>Python</bdi></span><span class="kit-what">يشغّل السكربتات التي يكتبها لك <bdi>Claude</bdi></span></li>
+        <li><span class="kit-name"><bdi>gh, supabase, vercel</bdi></span><span class="kit-what">أدوات سطر الأوامر لـ<bdi>GitHub</bdi> و<bdi>Supabase</bdi> و<bdi>Vercel</bdi></span></li>
       </ul>
       <p>يثبّتها ويندوز عبر مثبّت التطبيقات الخاص به، لذا سترى نوافذ تنزيل رسمية من مايكروسوفت تمرّ أمامك.</p>
     </section>
@@ -1193,7 +1314,15 @@ node --version     v22.20.0
 npm --version      10.9.3
 python --version   Python 3.14.0
 claude --version   2.1.4
-Antigravity IDE    installed</code></pre>
+gh --version       2.83.0
+supabase --version 2.62.4
+vercel --version   52.1.0
+Antigravity IDE    installed
+
+Still to do (these open a browser):
+gh auth login
+supabase login
+vercel login</code></pre>
         <p>وإن لم ينجح شيء ما، سيكتب <strong>NOT FINISHED</strong> بدلًا منها ويخبرك أيّها وما العمل. أغلق <bdi>PowerShell</bdi> وافتح نافذة جديدة، ثم افتح <strong><bdi>Antigravity IDE</bdi></strong> من قائمة ابدأ وسجّل الدخول بحساب Google. وإذا عرض تثبيت <bdi>WSL</bdi> فاختر «تخطّي»، واختر ملف تعريف <strong><bdi>PowerShell</bdi></strong> في طرفيته.</p>
       </section>
     </div>
@@ -1207,7 +1336,7 @@ Antigravity IDE    installed</code></pre>
       <p>انسخ هذا، ألصقه في <bdi>PowerShell</bdi>، واضغط Enter.</p>
       <div class="code-label"><bdi>PowerShell</bdi></div>
       <pre><code>$path = Join-Path $env:TEMP "foad-install-windows.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
+Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.4/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
       <p>سيعرض لك ما سيثبّته ثم ينتظر. اضغط Enter مرة أخرى للمتابعة، ثم اتركه يعمل — يستغرق وقتًا وينتهي بملخّص.</p>
       <div class="note">
@@ -1225,7 +1354,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
 node --version
 npm --version
 python --version
-claude --version</code></pre>
+claude --version
+gh --version
+supabase --version
+vercel --version</code></pre>
       <p>يجب أن يطبع كل سطر رقم إصدار. إن لم يفعل أحدها، أعد تشغيل أمر الخطوة ١ — فهو يكمل من حيث توقّف ويتجاوز ما نجح سابقًا.</p>
     </section>
 
@@ -1296,6 +1428,33 @@ claude --version</code></pre>
       </div>
     </details>
     </div>
+
+    <section class="step signin">
+      <span class="step-n">آخر خطوة</span>
+      <h2>سجّل الدخول إلى حساباتك</h2>
+      <p>يثبّت الإعداد هذه الأدوات لكنه لا يستطيع تسجيل دخولك — كل واحدة منها تفتح المتصفح. نفّذها واحدة تلو الأخرى. وتحتاج حسابًا في كل خدمة أولًا، فأنشئها قبل الورشة إن لم تكن قد فعلت.</p>
+
+      <h3><bdi>GitHub</bdi></h3>
+      <p>اختر <strong><bdi>HTTPS</bdi></strong> ثم <strong>تسجيل الدخول عبر المتصفح</strong> عندما يسألك. هذا يتيح لك أيضًا رفع الشيفرة دون كتابة كلمة مرور في كل مرة.</p>
+      <pre><code>gh auth login</code></pre>
+      <p>تحقّق من نجاحها:</p>
+      <pre><code>gh auth status</code></pre>
+
+      <h3><bdi>Supabase</bdi></h3>
+      <pre><code>supabase login</code></pre>
+      <p>تحقّق من نجاحها:</p>
+      <pre><code>supabase projects list</code></pre>
+
+      <h3><bdi>Vercel</bdi></h3>
+      <pre><code>vercel login</code></pre>
+      <p>تحقّق من نجاحها — يجب أن تطبع اسم المستخدم:</p>
+      <pre><code>vercel whoami</code></pre>
+
+      <div class="note">
+        <span class="note-tag">إذا فشلت إحداها</span>
+        تجاوزها وأكمل البقية. فهي مستقلة عن بعضها — فشل تسجيل الدخول إلى <bdi>Vercel</bdi> لا يؤثر على <bdi>GitHub</bdi> أو <bdi>Supabase</bdi>، ويمكنك العودة إليها لاحقًا.
+      </div>
+    </section>
   </div>
 </div>
 
