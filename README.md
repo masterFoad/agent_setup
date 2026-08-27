@@ -12,6 +12,7 @@ Installs Git, Node.js/npm, Python/pip, Google Antigravity IDE, Claude Code, a st
 
 - [Before interns start](#before-interns-start)
 - [Recommended distribution](#recommended-distribution)
+- [Intern-facing setup page](#intern-facing-setup-page)
 - [Supervised source installation](#supervised-source-installation)
 - [macOS — step by step](#macos--step-by-step)
   - [macOS — worst case: install everything by hand](#macos--worst-case-install-everything-by-hand)
@@ -47,6 +48,17 @@ For interns, use a **versioned, signed release** distributed by the instructor. 
 The old `v1.0.0` DMG does not contain the current installer and should not be distributed.
 
 Until signed `v2.1.3` binaries are published, use the pinned source scripts below only in a supervised setup session.
+
+## Intern-facing setup page
+
+A shareable, self-contained version of these instructions, in English and
+Arabic, is published at:
+
+**<https://masterfoad.github.io/agent_setup/>**
+
+The page is served from [`docs/index.html`](docs/index.html) on `main`. It pins
+the same tagged commands documented below, so update it whenever the version
+changes.
 
 ## Supervised source installation
 
