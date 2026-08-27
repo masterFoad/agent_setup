@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FOAD Dev Setup — v2.1.3</title>
+<title>Get Your Laptop Ready</title>
+<meta name="description" content="Set up your laptop for the Claude Code workshop - Mac and Windows, step by step.">
 <style>
   :root{
     --ink:#111111;
@@ -201,7 +202,9 @@
 
   /* ---------- Copy-to-clipboard ---------- */
   .codeblock{position:relative;direction:ltr;}
-  .codeblock pre{margin-top:0;}
+  /* Keep the first line clear of the copy button (pre is always LTR, so this is
+     the physical right edge in both language editions). */
+  .codeblock pre{margin-top:0;padding-right:78px;}
   .copy-btn{
     position:absolute;
     top:8px;
@@ -316,7 +319,7 @@
   .part-switch button:focus-visible{outline:2px solid var(--ink);outline-offset:-4px;}
   .platform-panel{display:none;}
   .platform-panel.active{display:block;}
-  .platform-panel > .sec:first-child{margin-top:56px;}
+  .platform-panel > .step:first-child{margin-top:44px;}
 
   /* ---------- References ---------- */
   ol.refs{margin:10px 0 0 0;list-style:none;counter-reset:ref;}
@@ -365,706 +368,732 @@
     .part-switch,.lang-switch,.copy-btn{display:none;}
     .platform-panel{display:block!important;}
   }
+
+  /* ---------- Welcome hero ---------- */
+  .hero{padding:8px 0 0;}
+  .kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:18px;
+  }
+  .lang[lang="ar"] .kicker{font-family:var(--arabic);font-size:13px;letter-spacing:.04em;}
+  .hero h1{
+    font-size:38px;
+    line-height:1.22;
+    font-weight:700;
+    letter-spacing:-.01em;
+    margin-bottom:18px;
+  }
+  .lang[lang="ar"] .hero h1{font-family:var(--arabic);line-height:1.5;}
+  .hero .lead{font-size:19px;line-height:1.65;color:var(--ink-soft);margin-bottom:14px;}
+  .hero .lead strong{color:var(--ink);}
+  .reassure{
+    border-inline-start:2px solid var(--ink);
+    padding:2px 0 2px 16px;
+    padding-inline-start:16px;
+    margin:26px 0 0;
+    font-size:16px;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- Platform chooser ---------- */
+  .chooser{margin:52px 0 0;}
+  .chooser h2{
+    font-size:15px;
+    font-family:var(--mono);
+    font-weight:400;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:14px;
+  }
+  .lang[lang="ar"] .chooser h2{font-family:var(--arabic);font-size:17px;letter-spacing:.03em;}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .choice{
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    padding:26px 18px 22px;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    transition:background .15s ease, color .15s ease;
+  }
+  .choice svg{width:38px;height:38px;fill:currentColor;}
+  .choice .choice-name{font-size:20px;font-weight:700;}
+  .choice .choice-sub{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .lang[lang="ar"] .choice .choice-sub{font-family:var(--arabic);font-size:12.5px;letter-spacing:.03em;}
+  .choice:hover{background:var(--code-bg);}
+  .choice[aria-selected="true"]{background:var(--ink);color:var(--paper);}
+  .choice[aria-selected="true"] .choice-sub{color:var(--paper);opacity:.7;}
+  .choice:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .detected{
+    font-size:14px;
+    color:var(--ink-faint);
+    margin-top:12px;
+    min-height:20px;
+  }
+  @media (max-width:520px){
+    .choices{grid-template-columns:1fr;}
+    .hero h1{font-size:30px;}
+    .hero .lead{font-size:17px;}
+  }
+
+  /* ---------- Steps ---------- */
+  .step{margin:0 0 8px;padding:30px 0 6px;border-top:1px solid var(--rule-hair);}
+  .step:first-of-type{border-top:2px solid var(--rule);}
+  .step-n{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    display:block;
+    margin-bottom:8px;
+  }
+  .lang[lang="ar"] .step-n{font-family:var(--arabic);font-size:13px;letter-spacing:.04em;}
+  .step h2{font-size:24px;line-height:1.3;font-weight:700;margin-bottom:12px;}
+  .lang[lang="ar"] .step h2{font-family:var(--arabic);line-height:1.5;}
+  .step h3{font-size:17px;margin:22px 0 6px;font-weight:700;}
+  .step p{margin-bottom:14px;}
+
+  /* ---------- Kit list ---------- */
+  ul.kit{list-style:none;margin:18px 0 8px;padding:0;}
+  ul.kit li{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:0 14px;
+    padding:11px 0;
+    border-bottom:1px solid var(--rule-hair);
+    font-size:15.5px;
+  }
+  ul.kit li:first-child{border-top:1px solid var(--rule-hair);}
+  ul.kit .kit-name{font-weight:700;white-space:nowrap;}
+  ul.kit .kit-what{color:var(--ink-soft);}
+  @media (max-width:520px){
+    ul.kit li{grid-template-columns:1fr;gap:2px;}
+  }
+
+  /* ---------- Plan B ---------- */
+  details.planb{border:1px solid var(--rule);padding:0;margin:34px 0 0;}
+  details.planb summary{
+    cursor:pointer;
+    padding:16px 18px;
+    font-weight:700;
+    font-size:16px;
+    list-style:none;
+  }
+  details.planb summary::-webkit-details-marker{display:none;}
+  details.planb summary::after{content:" +";font-family:var(--mono);color:var(--ink-faint);}
+  details.planb[open] summary::after{content:" −";}
+  details.planb summary:focus-visible{outline:2px solid var(--ink);outline-offset:-4px;}
+  details.planb .planb-body{padding:0 18px 20px;border-top:1px solid var(--rule-hair);}
+  details.planb .planb-body > p:first-child{margin-top:16px;}
+
+  /* ---------- Foot ---------- */
+  .foot{
+    margin-top:70px;
+    padding-top:18px;
+    border-top:2px solid var(--rule);
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .lang[lang="ar"] .foot{font-family:var(--arabic);font-size:13px;letter-spacing:.03em;text-transform:none;}
+  .foot a{color:var(--ink-faint);}
+
+  /* ---------- Bidi safety ---------- */
+  /* Latin tool names inside Arabic headings/prose reorder without isolation. */
+  bdi{unicode-bidi:isolate;}
+  .lang[lang="ar"] code.inline{unicode-bidi:isolate;}
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- ===================== LANGUAGE SWITCH ===================== -->
   <nav class="lang-switch" aria-label="Language / اللغة">
     <button id="btn-en" aria-pressed="true" lang="en">ENGLISH</button>
     <button id="btn-ar" aria-pressed="false" lang="ar"><span class="ar-label">العربية</span></button>
   </nav>
 
-  <!-- ############################################################ -->
-  <!-- #####################  ENGLISH  ############################ -->
-  <!-- ############################################################ -->
-  <div class="lang" id="lang-en" lang="en" dir="ltr">
+<div class="lang" id="lang-en" lang="en">
 
-  <header class="titleblock">
-    <div class="eyebrow">Workshop Setup Reference · Supervised Installation</div>
-    <h1 class="title">FOAD Dev Setup</h1>
-    <p class="subtitle">A beginner-oriented environment setup for Windows and macOS: Git, Node.js, Python, Antigravity IDE, and Claude Code.</p>
-    <div class="meta">
-      <span>Version <b>2.1.3</b></span>
-      <span>Platforms <b>Windows · macOS</b></span>
-      <span>Duration <b>10–25 min</b></span>
-    </div>
-    <hr class="titlerule">
-    <hr class="titlerule-thin">
+  <header class="hero">
+    <div class="kicker">Claude Code Workshop</div>
+    <h1>Welcome. Let's get your laptop ready.</h1>
+    <p class="lead">Before the workshop, your computer needs a few free tools: the AI assistant you'll be working with, the editor you'll write in, and the pieces they run on.</p>
+    <p class="lead">Everything you need is on this page. Pick your computer, then work down: copy a command, paste it, press Enter. About 20 minutes, and you only do it once.</p>
   </header>
 
-  <section class="abstract">
-    <h2>Abstract</h2>
-    <p>This document describes the supervised installation procedure for the FOAD workshop development environment. The installer provisions Git, Node.js/npm, Python 3/pip, the Google Antigravity IDE, Claude Code, a starter Claude command and skill, and a plain-text terminal guide placed on the Desktop. Two installation paths are documented per platform: the pinned installer script (recommended) and a step-by-step manual fallback using only vendor-documented commands. Verification, troubleshooting, and distribution-integrity requirements are included.</p>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§1</span><h2 class="sec-title">Before interns start</h2></div>
-    <p>Confirm that each intern has:</p>
-    <ul class="plain">
-      <li>10–25 minutes, reliable internet, and several gigabytes of free disk space;</li>
-      <li>permission to install software — individual package installers may request administrator approval;</li>
-      <li>an eligible Claude subscription, Anthropic Console account, or supported provider — see <a href="https://code.claude.com/docs/en/authentication">Claude Code authentication</a> and <a href="https://claude.ai/upgrade">claude.ai plans</a>;</li>
-      <li>a Google account, if the workshop requires <a href="https://antigravity.google/">Antigravity IDE</a> sign-in.</li>
-    </ul>
-    <p>The installers show this checklist and ask for confirmation before making changes. Existing starter files and the Desktop guide are preserved on reruns.</p>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§2</span><h2 class="sec-title">Recommended distribution</h2></div>
-    <p>For interns, use a <strong>versioned, signed release</strong> distributed by the instructor. Verify the published SHA-256 checksum before opening it.</p>
-    <ul class="plain">
-      <li>Windows releases should be <a href="https://learn.microsoft.com/windows/win32/seccrypto/cryptography-tools">Authenticode signed</a>.</li>
-      <li>macOS releases should be <a href="https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution">Developer&nbsp;ID signed and notarized</a>.</li>
-      <li>Do not tell interns to bypass <a href="https://learn.microsoft.com/windows/security/operating-system-security/virus-and-threat-protection/microsoft-defender-smartscreen/">SmartScreen</a> or <a href="https://support.apple.com/en-us/102445">Gatekeeper</a> for an artifact they have not independently verified.</li>
-    </ul>
-    <div class="note">
-      <span class="note-tag">Notice</span>
-      The old <code class="inline">v1.0.0</code> DMG does not contain the current installer and should not be distributed. Until signed <code class="inline">v2.1.3</code> binaries are published, use the pinned source scripts in Part&nbsp;I / Part&nbsp;II below, only in a supervised setup session. The scripts pin FOAD's installer to the versioned <a href="https://github.com/masterFoad/agent_setup/releases/tag/v2.1.3"><code class="inline">v2.1.3</code></a> tag and download it before execution; published tags must never be moved. They still use official package managers and vendor installers, so review release notes before each workshop.
+  <div class="chooser">
+    <h2>Pick your computer</h2>
+    <div class="choices" role="tablist" aria-label="Choose your computer">
+      <button class="choice" id="tab-mac-en" role="tab" aria-selected="false" aria-controls="panel-mac-en">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+        <span class="choice-name">Mac</span>
+        <span class="choice-sub">macOS</span>
+      </button>
+      <button class="choice" id="tab-win-en" role="tab" aria-selected="false" aria-controls="panel-win-en">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 5.6 10.4 4.5v7.1H2.8zM11.4 4.4 21.2 3v8.6h-9.8zM2.8 12.5h7.6v7.1L2.8 18.5zM11.4 12.5h9.8V21l-9.8-1.4z"/></svg>
+        <span class="choice-name">Windows</span>
+        <span class="choice-sub">Windows 10 / 11</span>
+      </button>
     </div>
-    <p>Instructors can compare the downloaded scripts against <code class="inline">SHA256SUMS</code> from the same tag before the session. Signed binary releases must publish checksums generated <em>after</em> signing/notarization.</p>
-    <div class="code-label">Checksum — macOS</div>
-    <pre><code>shasum -a 256 /tmp/foad-install-mac.sh</code></pre>
-    <div class="code-label">Checksum — Windows</div>
-    <pre><code>Get-FileHash $env:TEMP\foad-install-windows.ps1 -Algorithm SHA256</code></pre>
-  </section>
-
-  <div class="part-switch" role="tablist" aria-label="Platform">
-    <button id="tab-mac-en" role="tab" aria-selected="true" aria-controls="panel-mac-en">
-      <span class="part-label">Part I</span>
-      <span class="part-name">macOS</span>
-    </button>
-    <button id="tab-win-en" role="tab" aria-selected="false" aria-controls="panel-win-en">
-      <span class="part-label">Part II</span>
-      <span class="part-name">Windows</span>
-    </button>
+    <p class="detected" id="detected-en"></p>
   </div>
 
-  <!-- ========== EN · PART I : MACOS ========== -->
-  <div class="platform-panel active" id="panel-mac-en" role="tabpanel" aria-labelledby="tab-mac-en">
+  <!-- ================= MAC ================= -->
+  <div class="platform-panel" id="panel-mac-en" role="tabpanel" aria-labelledby="tab-mac-en">
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§3</span><h2 class="sec-title">macOS — supervised installation</h2></div>
-      <p><strong>Requirements.</strong> macOS 14 (Sonoma) or newer — matching <a href="https://docs.brew.sh/Support-Tiers">Homebrew's support tiers</a>. Apple Silicon or Intel. Apple's built-in <strong>Terminal</strong> app (Applications → Utilities → Terminal).</p>
+    <section class="step">
+      <span class="step-n">What you're installing</span>
+      <h2>Five tools, all free</h2>
+      <ul class="kit">
+        <li><span class="kit-name">Claude Code</span><span class="kit-what">the AI assistant you'll work with all day</span></li>
+        <li><span class="kit-name">Antigravity IDE</span><span class="kit-what">the app you'll write code in</span></li>
+        <li><span class="kit-name">Git</span><span class="kit-what">keeps a history of your work, like unlimited undo</span></li>
+        <li><span class="kit-name">Node.js</span><span class="kit-what">runs JavaScript projects on your machine</span></li>
+        <li><span class="kit-name">Python</span><span class="kit-what">runs the scripts Claude writes for you</span></li>
+      </ul>
+      <p>Homebrew comes along too — it's the helper that installs the rest. One command sets up everything.</p>
+    </section>
 
-      <h3><span class="sub-num">3.1</span>Run the pinned installer</h3>
+    <section class="step">
+      <span class="step-n">Step 1</span>
+      <h2>Run the setup</h2>
+      <p>Copy this, paste it into Terminal, and press Enter.</p>
       <div class="code-label">Terminal</div>
       <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh</code></pre>
+      <p>It shows you what it's about to install and waits. Press Enter again to let it go, then leave it alone — it runs for a while, asks for your Mac password along the way, and finishes with a summary.</p>
       <div class="note">
-        <span class="note-tag">Do not use sudo</span>
-        Never run these commands with <code class="inline">sudo</code>. Homebrew or individual package installers will request elevation only when needed. Do <strong>not</strong> pipe the script straight into <code class="inline">bash</code> — the installer refuses that path because Homebrew needs an interactive terminal.
-      </div>
-
-      <h3><span class="sub-num">3.2</span>What the installer does</h3>
-      <div class="tablewrap">
-        <table>
-          <caption>Table 1 · macOS installer steps, in order</caption>
-          <thead><tr><th style="width:36px">#</th><th style="width:180px">Step</th><th>What happens</th></tr></thead>
-          <tbody>
-            <tr><td class="stepnum">1</td><td><span class="stepname">Consent prompt</span></td><td>Lists time, disk, admin, account and file-change expectations. Enter continues; <code>q</code> cancels.</td></tr>
-            <tr><td class="stepnum">2</td><td><span class="stepname">Check Mac &amp; internet</span></td><td>Verifies macOS (Darwin), refuses to run as <code>sudo</code>/root, requires macOS ≥ 14, confirms GitHub is reachable.</td></tr>
-            <tr><td class="stepnum">3</td><td><span class="stepname">Check Homebrew</span></td><td>Uses an existing <code>brew</code>, otherwise runs the official <a href="https://docs.brew.sh/Installation">Homebrew installer</a>. First install may ask for your Mac password and install the Xcode Command Line Tools.</td></tr>
-            <tr><td class="stepnum">4</td><td><span class="stepname">Save PATH</span></td><td>Appends Homebrew and tool paths (<code>~/.local/bin</code>, <code>~/.claude/bin</code>, <code>~/.claude/local</code>) to <code>~/.zprofile</code> / <code>~/.bash_profile</code>.</td></tr>
-            <tr><td class="stepnum">5</td><td><span class="stepname">Update Homebrew</span></td><td><code>brew update</code>. A failure here is a warning, not a stop.</td></tr>
-            <tr><td class="stepnum">6</td><td><span class="stepname">Install Git</span></td><td><code>brew install git</code></td></tr>
-            <tr><td class="stepnum">7</td><td><span class="stepname">Install Node.js + npm</span></td><td><code>brew install node</code></td></tr>
-            <tr><td class="stepnum">8</td><td><span class="stepname">Install Python 3 + pip</span></td><td><code>brew install python</code></td></tr>
-            <tr><td class="stepnum">9</td><td><span class="stepname">Install Antigravity IDE</span></td><td><code>brew install --cask antigravity-ide</code>. If the cask is unavailable, the <a href="https://antigravity.google/download">download page</a> opens in your browser.</td></tr>
-            <tr><td class="stepnum">10</td><td><span class="stepname">Install Claude Code</span></td><td>Tries in order: native installer (<code>curl -fsSL https://claude.ai/install.sh</code>), then <code>brew install --cask claude-code</code>, then <code>npm install -g @anthropic-ai/claude-code</code>.</td></tr>
-            <tr><td class="stepnum">11</td><td><span class="stepname">Create starter files</span></td><td>Writes a starter skill to <code>~/.claude/skills/summarize-changes/</code> and a starter command to <code>~/.claude/commands/</code>. Existing files are kept.</td></tr>
-            <tr><td class="stepnum">12</td><td><span class="stepname">Create Desktop guide</span></td><td>Writes <code>~/Desktop/FOAD-terminal-basics.txt</code> and opens it in TextEdit at the end.</td></tr>
-            <tr><td class="stepnum">13</td><td><span class="stepname">Verify</span></td><td>Runs <code>--version</code> for <code>git</code>, <code>node</code>, <code>npm</code>, <code>python3</code>, <code>pip3</code>, <code>claude</code>, then prints a ✔/⚠/✘ summary and next steps.</td></tr>
-          </tbody>
-        </table>
+        <span class="note-tag">Don't add sudo</span>
+        Run it exactly as it is. The setup stops on purpose if you put <code class="inline">sudo</code> in front.
       </div>
     </section>
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§4</span><h2 class="sec-title">macOS — worst case, by hand</h2></div>
-      <p>If the installer stops partway and rerunning does not get past it, run these blocks in Terminal <strong>one at a time, in order</strong>, checking the result of each before moving on. Nothing here is FOAD-specific: every command is the vendor's own documented install. Skip any block whose tool already works.</p>
+    <section class="step">
+      <span class="step-n">Step 2</span>
+      <h2>Close Terminal, open it again, check</h2>
+      <p>The new tools only appear in a fresh window. Quit Terminal, open it again, then run:</p>
+      <div class="code-label">Terminal</div>
+      <pre><code>git --version
+node --version
+npm --version
+python3 --version
+claude --version</code></pre>
+      <p>Every line should print a version number. If one doesn't, run the Step 1 command again — it picks up where it left off and skips whatever already worked.</p>
+    </section>
 
-      <h3><span class="sub-num">4.1</span>Homebrew <span class="aside">— skip if <code class="inline">brew --version</code> already prints a version</span></h3>
-      <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+    <section class="step">
+      <span class="step-n">Step 3</span>
+      <h2>Log in to Claude Code</h2>
+      <div class="code-label">Terminal</div>
+      <pre><code>claude</code></pre>
+      <p>Your browser opens to log in. Use a Claude account on a paid plan — Pro or higher.</p>
+    </section>
 
-      <h3><span class="sub-num">4.2</span>Put Homebrew on your PATH, then close and reopen Terminal</h3>
-      <pre><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile   <span class="cmt"># Apple Silicon</span>
-echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile      <span class="cmt"># Intel Macs</span>
+    <section class="step">
+      <span class="step-n">Step 4</span>
+      <h2>Open the editor</h2>
+      <p>Open <strong>Antigravity IDE</strong> from your Applications folder and sign in with your Google account. That's everything — your laptop is ready.</p>
+    </section>
+
+    <details class="planb">
+      <summary>Plan B: install one thing at a time</summary>
+      <div class="planb-body">
+        <p>Only if the Step 1 command keeps failing. Install each tool yourself, one block at a time, so you can see which one is unhappy. Skip anything that already works.</p>
+
+        <h3>Homebrew</h3>
+        <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+
+        <h3>Let your Mac find Homebrew</h3>
+        <p>First line for Apple Silicon, second for older Intel Macs. Then close and reopen Terminal.</p>
+        <pre><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile   <span class="cmt"># Apple Silicon</span>
+echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile      <span class="cmt"># Intel</span>
 eval "$(brew shellenv)"</code></pre>
 
-      <h3><span class="sub-num">4.3</span>Git</h3>
-      <pre><code>brew install git</code></pre>
+        <h3>Git</h3>
+        <pre><code>brew install git</code></pre>
 
-      <h3><span class="sub-num">4.4</span>Node.js + npm</h3>
-      <pre><code>brew install node</code></pre>
+        <h3>Node.js and npm</h3>
+        <pre><code>brew install node</code></pre>
 
-      <h3><span class="sub-num">4.5</span>Python 3 + pip</h3>
-      <pre><code>brew install python</code></pre>
+        <h3>Python</h3>
+        <pre><code>brew install python</code></pre>
 
-      <h3><span class="sub-num">4.6</span>Antigravity IDE <span class="aside">— fallback: <a href="https://antigravity.google/download">antigravity.google/download</a></span></h3>
-      <pre><code>brew install --cask antigravity-ide</code></pre>
+        <h3>Antigravity IDE</h3>
+        <p>If this fails, download it from <a href="https://antigravity.google/download">antigravity.google/download</a>.</p>
+        <pre><code>brew install --cask antigravity-ide</code></pre>
 
-      <h3><span class="sub-num">4.7</span>Claude Code <span class="aside">— Anthropic's official installer</span></h3>
-      <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
+        <h3>Claude Code</h3>
+        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
 /bin/bash /tmp/claude-install.sh</code></pre>
-      <p>If it fails, try <code class="inline">brew install --cask claude-code</code>, then <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
+        <p>If that doesn't work: <code class="inline">brew install --cask claude-code</code>, and failing that, <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
 
-      <h3><span class="sub-num">4.8</span>Add the Claude Code paths, then close and reopen Terminal</h3>
-      <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
+        <h3>Let your Mac find Claude</h3>
+        <p>Then close and reopen Terminal.</p>
+        <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
 
-      <h3><span class="sub-num">4.9</span>Check everything <span class="aside">— every line must print a version</span></h3>
-      <pre><code>git --version
+        <h3>Check everything</h3>
+        <pre><code>git --version
 node --version
 npm --version
 python3 --version
 pip3 --version
 claude --version</code></pre>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§5</span><h2 class="sec-title">macOS — troubleshooting</h2></div>
-      <ul class="plain">
-        <li>Copy the complete failing step and its preceding output for the instructor.</li>
-        <li>Password prompts display no characters while typing.</li>
-        <li>The full setup requires macOS 14 or newer to match <a href="https://docs.brew.sh/Support-Tiers">Homebrew's supported baseline</a>.</li>
-        <li><code class="inline">command not found: brew</code> in a fresh Terminal → close and reopen Terminal once; the installer writes <code class="inline">eval "$(brew shellenv)"</code> into <code class="inline">~/.zprofile</code>.</li>
-        <li>Never rerun with <code class="inline">sudo</code>; the installer stops if it detects root.</li>
-      </ul>
-    </section>
+      </div>
+    </details>
   </div>
 
-  <!-- ========== EN · PART II : WINDOWS ========== -->
+  <!-- ================= WINDOWS ================= -->
   <div class="platform-panel" id="panel-win-en" role="tabpanel" aria-labelledby="tab-win-en">
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§3</span><h2 class="sec-title">Windows — supervised installation</h2></div>
-      <p><strong>Requirements.</strong> Windows 10 build 17763 (1809) or newer — the minimum for <a href="https://learn.microsoft.com/windows/package-manager/winget/">WinGet</a> — and <strong>Windows PowerShell</strong> (Start → type <code class="inline">PowerShell</code>). Do <strong>not</strong> use a WSL/Ubuntu terminal; WSL is not required at any point in this workshop.</p>
+    <section class="step">
+      <span class="step-n">What you're installing</span>
+      <h2>Five tools, all free</h2>
+      <ul class="kit">
+        <li><span class="kit-name">Claude Code</span><span class="kit-what">the AI assistant you'll work with all day</span></li>
+        <li><span class="kit-name">Antigravity IDE</span><span class="kit-what">the app you'll write code in</span></li>
+        <li><span class="kit-name">Git</span><span class="kit-what">keeps a history of your work, like unlimited undo</span></li>
+        <li><span class="kit-name">Node.js</span><span class="kit-what">runs JavaScript projects on your machine</span></li>
+        <li><span class="kit-name">Python</span><span class="kit-what">runs the scripts Claude writes for you</span></li>
+      </ul>
+      <p>Windows installs these through its own app installer, so official Microsoft download windows will go by.</p>
+    </section>
 
-      <h3><span class="sub-num">3.1</span>Run the pinned installer</h3>
+    <section class="step">
+      <span class="step-n">Step 1</span>
+      <h2>Run the setup</h2>
+      <p>Copy this, paste it into PowerShell, and press Enter.</p>
       <div class="code-label">PowerShell</div>
       <pre><code>$path = Join-Path $env:TEMP "foad-install-windows.ps1"
 Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
-      <p>The installer verifies Claude using only the PATH that a genuinely new PowerShell will receive. If an older FOAD setup left <code class="inline">claude.exe</code> installed but unreachable, rerunning this version repairs the user PATH.</p>
+      <p>It shows you what it's about to install and waits. Press Enter again to let it go, then leave it alone — it runs for a while and finishes with a summary.</p>
       <div class="note">
-        <span class="note-tag">WSL is not required</span>
-        If Antigravity offers to install or open WSL, choose <strong>Skip</strong>, <strong>Cancel</strong>, or <strong>Not now</strong>. In Antigravity's terminal menu choose <strong>Select Default Profile → PowerShell</strong>, close the existing terminal, and open a new one.
+        <span class="note-tag">Two things while it runs</span>
+        Click <strong>Yes</strong> on any "allow this app to make changes?" box — it sometimes hides behind other windows. And the editor is a big download that can look frozen for several minutes; it isn't.
       </div>
-
-      <h3><span class="sub-num">3.2</span>What the installer does</h3>
-      <div class="tablewrap">
-        <table>
-          <caption>Table 2 · Windows installer steps, in order</caption>
-          <thead><tr><th style="width:36px">#</th><th style="width:180px">Step</th><th>What happens</th></tr></thead>
-          <tbody>
-            <tr><td class="stepnum">1</td><td><span class="stepname">Start the Desktop log</span></td><td>Transcripts the whole run to <code>Desktop\FOAD-setup-log.txt</code> (OneDrive-redirected Desktops supported).</td></tr>
-            <tr><td class="stepnum">2</td><td><span class="stepname">Consent prompt</span></td><td>Lists time, disk, UAC, account and file-change expectations, including the WSL note. Enter continues; <code>Q</code> cancels.</td></tr>
-            <tr><td class="stepnum">3</td><td><span class="stepname">Check your computer</span></td><td>Verifies the Windows build (≥ 17763) and internet connectivity.</td></tr>
-            <tr><td class="stepnum">4</td><td><span class="stepname">Check WinGet</span></td><td>Uses WinGet if present; otherwise attempts registration / Microsoft Store recovery of <a href="https://apps.microsoft.com/detail/9nblggh4nns1"><strong>App Installer</strong></a>, then <code>winget source update</code>.</td></tr>
-            <tr><td class="stepnum">5</td><td><span class="stepname">Install Git</span></td><td><code>winget install --id Git.Git --source winget</code></td></tr>
-            <tr><td class="stepnum">6</td><td><span class="stepname">Install Node.js + npm</span></td><td><code>winget install --id OpenJS.NodeJS.LTS --source winget</code></td></tr>
-            <tr><td class="stepnum">7</td><td><span class="stepname">Install Antigravity IDE</span></td><td><code>winget install --id Google.AntigravityIDE</code>. This is the <strong>big</strong> download and can look frozen — it is not. Fallback: the <a href="https://antigravity.google/download">download page</a> opens in your browser. <strong>Note:</strong> <code>Google.Antigravity</code> (without <code>IDE</code>) is a different app — an agent orchestrator with no editor. Do not install it instead.</td></tr>
-            <tr><td class="stepnum">8</td><td><span class="stepname">Install Python 3 + pip</span></td><td>First available of <code>Python.Python.3.14</code>, <code>3.13</code>, <code>3.12</code>. Fallback: the <a href="https://www.python.org/downloads/windows/">Python for Windows</a> page opens — tick <strong>"Add python.exe to PATH"</strong>.</td></tr>
-            <tr><td class="stepnum">9</td><td><span class="stepname">Install Claude Code</span></td><td>Repairs an existing install first (PATH only), then the native installer (<code>https://claude.ai/install.ps1</code>, run in a separate PowerShell process), then the <code>Anthropic.ClaudeCode</code> WinGet package. Each path must produce a <strong>valid Anthropic Authenticode signature</strong> and a <code>claude</code> that resolves on the persistent user PATH, or it is treated as failed.</td></tr>
-            <tr><td class="stepnum">10</td><td><span class="stepname">Create workshop files</span></td><td>Writes a starter skill to <code>%USERPROFILE%\.claude\skills\summarize-changes\</code> and a command to <code>%USERPROFILE%\.claude\commands\</code>, plus <code>Desktop\FOAD-terminal-basics-v2.1.3.txt</code> (opened in Notepad at the end).</td></tr>
-            <tr><td class="stepnum">11</td><td><span class="stepname">Final check</span></td><td>Re-resolves <code>git</code>, <code>node</code>, <code>npm</code>, <code>python</code>/<code>py</code>, <code>pip</code>, <code>claude</code> using <strong>only the persisted machine + user PATH</strong> — what a genuinely new PowerShell window will see — then prints a summary with a "how to fix" line per failed item.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul class="plain" style="margin-top:16px">
-        <li>Click <strong>Yes</strong> on any "Do you want to allow this app to make changes?" (UAC) prompt. It sometimes hides behind other windows — check the taskbar.</li>
-        <li>The final check deliberately ignores the current session's PATH, so a green summary means the tools really will work in a fresh window. Still open a <strong>new</strong> PowerShell afterwards.</li>
-        <li>The <code class="inline">.claude</code> directories, the versioned Desktop guide, and the setup log are the only files this script creates.</li>
-      </ul>
     </section>
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§4</span><h2 class="sec-title">Windows — worst case, by hand</h2></div>
-      <p>If the installer stops partway and rerunning does not get past it, run these blocks in <strong>Windows PowerShell</strong> (not WSL) <strong>one at a time, in order</strong>, checking the result of each before moving on. Nothing here is FOAD-specific: every command is the vendor's own documented install. Skip any block whose tool already works. Answer <strong>Yes</strong> to any UAC prompt — it sometimes hides behind other windows.</p>
+    <section class="step">
+      <span class="step-n">Step 2</span>
+      <h2>Close PowerShell, open it again, check</h2>
+      <p>The new tools only appear in a fresh window. Close PowerShell, open a new one, then run:</p>
+      <div class="code-label">PowerShell</div>
+      <pre><code>git --version
+node --version
+npm --version
+python --version
+claude --version</code></pre>
+      <p>Every line should print a version number. If one doesn't, run the Step 1 command again — it picks up where it left off and skips whatever already worked.</p>
+    </section>
 
-      <h3><span class="sub-num">4.1</span>WinGet <span class="aside">— skip if it already prints a version; otherwise install <a href="https://apps.microsoft.com/detail/9nblggh4nns1">App Installer</a> and reopen PowerShell</span></h3>
-      <pre><code>winget --version</code></pre>
+    <section class="step">
+      <span class="step-n">Step 3</span>
+      <h2>Log in to Claude Code</h2>
+      <div class="code-label">PowerShell</div>
+      <pre><code>claude</code></pre>
+      <p>Your browser opens to log in. Use a Claude account on a paid plan — Pro or higher.</p>
+    </section>
 
-      <h3><span class="sub-num">4.2</span>Git</h3>
-      <pre><code>winget install --id Git.Git --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+    <section class="step">
+      <span class="step-n">Step 4</span>
+      <h2>Open the editor</h2>
+      <p>Open <strong>Antigravity IDE</strong> from the Start Menu and sign in with your Google account.</p>
+      <div class="note">
+        <span class="note-tag">Two things to watch</span>
+        Open the one called <strong>Antigravity IDE</strong> — there's a different app named just <em>Antigravity</em>. And if it offers to install <strong>WSL</strong>, choose Skip or Cancel; inside the editor's terminal pick the <strong>PowerShell</strong> profile, or <code class="inline">claude</code> will look missing when it isn't.
+      </div>
+      <p>That's everything — your laptop is ready.</p>
+    </section>
 
-      <h3><span class="sub-num">4.3</span>Node.js + npm</h3>
-      <pre><code>winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+    <details class="planb">
+      <summary>Plan B: install one thing at a time</summary>
+      <div class="planb-body">
+        <p>Only if the Step 1 command keeps failing. Install each tool yourself, one block at a time, so you can see which one is unhappy. Skip anything that already works, and say <strong>Yes</strong> to any permission box.</p>
 
-      <h3><span class="sub-num">4.4</span>Antigravity IDE <span class="aside">— the big one; can look frozen for minutes. Note the <code class="inline">IDE</code> suffix.</span></h3>
-      <pre><code>winget install --id Google.AntigravityIDE --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
-      <p>Fallback: <a href="https://antigravity.google/download">antigravity.google/download</a>. <code class="inline">Google.Antigravity</code> (without <code class="inline">IDE</code>) is a different app.</p>
+        <h3>Check Windows' app installer</h3>
+        <p>If this prints a version, carry on. If not, install <strong>App Installer</strong> from the <a href="https://apps.microsoft.com/detail/9nblggh4nns1">Microsoft Store</a>, then reopen PowerShell.</p>
+        <pre><code>winget --version</code></pre>
 
-      <h3><span class="sub-num">4.5</span>Python 3 + pip <span class="aside">— try in order; stop at the first that succeeds</span></h3>
-      <pre><code>winget install --id Python.Python.3.14 --exact --source winget --accept-package-agreements --accept-source-agreements
+        <h3>Git</h3>
+        <pre><code>winget install --id Git.Git --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3>Node.js and npm</h3>
+        <pre><code>winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3>Antigravity IDE</h3>
+        <p>The big one — it can look frozen for minutes. The <code class="inline">IDE</code> at the end of the name matters. If it fails, download it from <a href="https://antigravity.google/download">antigravity.google/download</a>.</p>
+        <pre><code>winget install --id Google.AntigravityIDE --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3>Python</h3>
+        <p>Try these in order, stop at the first that works. If none do, install from <a href="https://www.python.org/downloads/windows/">python.org</a> and tick <strong>Add python.exe to PATH</strong>.</p>
+        <pre><code>winget install --id Python.Python.3.14 --exact --source winget --accept-package-agreements --accept-source-agreements
 winget install --id Python.Python.3.13 --exact --source winget --accept-package-agreements --accept-source-agreements
 winget install --id Python.Python.3.12 --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
-      <p>Fallback: <a href="https://www.python.org/downloads/windows/">python.org/downloads/windows</a>, ticking <strong>"Add python.exe to PATH"</strong>.</p>
 
-      <h3><span class="sub-num">4.6</span>Claude Code <span class="aside">— downloaded first, then run, so you can see what you are about to execute</span></h3>
-      <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
+        <h3>Claude Code</h3>
+        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
 Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
 powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
-      <p>If that fails, use the official WinGet package instead:</p>
-      <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+        <p>If that fails, try this instead:</p>
+        <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
-      <h3><span class="sub-num">4.7</span>Put Claude Code on your PATH permanently <span class="aside">— only if step 4.9 says <code class="inline">claude</code> is missing</span></h3>
-      <pre><code>$claudeDir = Join-Path $HOME ".local\bin"
+        <h3>Only if claude is still missing</h3>
+        <p>This tells Windows where to find it, permanently. Then close PowerShell and open a new one.</p>
+        <pre><code>$claudeDir = Join-Path $HOME ".local\bin"
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($userPath -notlike "*$claudeDir*") {
     [Environment]::SetEnvironmentVariable("Path", "$userPath;$claudeDir", "User")
 }</code></pre>
-      <p>Adjust the folder if Claude installed elsewhere.</p>
 
-      <h3><span class="sub-num">4.8</span>Close PowerShell and open a new one</h3>
-      <p>PATH changes do not reach the window that made them.</p>
-
-      <h3><span class="sub-num">4.9</span>Check everything <span class="aside">— every line must print a version</span></h3>
-      <pre><code>git --version
+        <h3>Check everything</h3>
+        <pre><code>git --version
 node --version
 npm --version
 python --version
 pip --version
 claude --version</code></pre>
-
-      <h3><span class="sub-num">4.10</span>Confirm a genuinely new shell can see Claude</h3>
-      <p>This is the check the installer performs, and the one that catches a PATH that was never persisted.</p>
-      <pre><code>$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-$env:Path = "$machinePath;$userPath"
-claude --version</code></pre>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§5</span><h2 class="sec-title">Windows — troubleshooting</h2></div>
-      <ul class="plain">
-        <li>Send <code class="inline">FOAD-setup-log.txt</code> from the Desktop to the instructor.</li>
-        <li>If <code class="inline">claude</code> is missing in a normal PowerShell, rerun the current setup; it repairs and verifies the persistent user PATH. If it still fails, send <code class="inline">FOAD-setup-log.txt</code> to the instructor.</li>
-        <li>If <code class="inline">claude</code> is missing only inside Antigravity, cancel any WSL prompt, choose <strong>Select Default Profile → PowerShell</strong>, close the existing terminal, and create a new terminal. WSL is not required.</li>
-        <li>Large WinGet downloads can appear idle; check for a hidden UAC prompt in the taskbar.</li>
-        <li>If <code class="inline">winget</code> is not recognised, install <strong>App Installer</strong> from the <a href="https://apps.microsoft.com/detail/9nblggh4nns1">Microsoft Store</a> and rerun.</li>
-        <li>If <code class="inline">python</code> opens the Microsoft Store instead of running, reinstall Python with <strong>"Add python.exe to PATH"</strong> ticked, or use <code class="inline">py --version</code>.</li>
-        <li>A "no valid Anthropic signature" warning means the Claude binary on disk is not the official signed one — do not work around it; rerun setup and report it.</li>
-        <li>The WinGet registration / Store recovery path needs validation on a clean Windows VM before each workshop.</li>
-      </ul>
-    </section>
+      </div>
+    </details>
   </div>
+</div>
 
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§6</span><h2 class="sec-title">After installation</h2></div>
-    <ol class="plain">
-      <li>Close and reopen PowerShell or Terminal.</li>
-      <li>Run <code class="inline">claude</code> and follow the login instructions (or type <code class="inline">/login</code>). Claude Code requires a <strong>paid</strong> Claude plan (Pro or higher), an Anthropic Console account, or a supported provider — see <a href="https://code.claude.com/docs/en/authentication">authentication</a>.</li>
-      <li>Open Google Antigravity IDE (Start Menu on Windows, Applications on macOS) and sign in with a Google account. On Windows, open <strong>Antigravity IDE</strong>, not the separate app called just "Antigravity".</li>
-      <li>Read the FOAD terminal guide on the Desktop (<code class="inline">FOAD-terminal-basics-v&lt;version&gt;.txt</code> on Windows, <code class="inline">FOAD-terminal-basics.txt</code> on macOS).</li>
-    </ol>
-    <div class="code-label">Verify</div>
-    <pre><code>git --version
-node --version
-npm --version
-python --version     <span class="cmt"># Windows</span>
-python3 --version    <span class="cmt"># macOS</span>
-claude --version</code></pre>
-    <p>If setup is incomplete, follow the final summary and rerun it. Existing workshop files are preserved, but the setup is not a general-purpose rollback or uninstaller for third-party packages.</p>
-  </section>
+<div class="lang" id="lang-ar" lang="ar" dir="rtl" hidden>
 
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§7</span><h2 class="sec-title">Release artifacts &amp; maintainer policy</h2></div>
-    <p><strong>Building releases.</strong> See <code class="inline">packaging/README.md</code>. Release builders require a clean working tree, <code class="inline">HEAD</code> tagged exactly as <code class="inline">v$(cat VERSION)</code>, and matching script/package versions. Builders emit a <code class="inline">.sha256</code> file beside each artifact. <code class="inline">FOAD_ALLOW_UNTAGGED_BUILD=1</code> is available only for local test builds.</p>
-    <p><strong>Maintainer policy.</strong></p>
-    <ul class="plain">
-      <li>Never move a published version tag or replace an existing release asset.</li>
-      <li>Record the source commit and checksums in release notes.</li>
-      <li>Test Windows with a standard user plus separate administrator credentials.</li>
-      <li>Test macOS on both Apple Silicon and Intel where supported.</li>
-      <li>Run the validation workflow — including <code class="inline">tests/test_release_contract.py</code> and the Windows PATH check in <code class="inline">tests/test_windows_path.ps1</code> — and verify failure/recovery paths before distribution.</li>
-    </ul>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§8</span><h2 class="sec-title">References</h2></div>
-    <ol class="refs">
-      <li><div><span class="ref-title">Claude Code setup</span><a class="ref-url" href="https://code.claude.com/docs/en/setup">code.claude.com/docs/en/setup</a></div></li>
-      <li><div><span class="ref-title">Claude Code PATH troubleshooting</span><a class="ref-url" href="https://code.claude.com/docs/en/troubleshoot-install#verify-your-path">code.claude.com/docs/en/troubleshoot-install#verify-your-path</a></div></li>
-      <li><div><span class="ref-title">Claude Code authentication</span><a class="ref-url" href="https://code.claude.com/docs/en/authentication">code.claude.com/docs/en/authentication</a></div></li>
-      <li><div><span class="ref-title">Claude plans</span><a class="ref-url" href="https://claude.ai/upgrade">claude.ai/upgrade</a></div></li>
-      <li><div><span class="ref-title">Antigravity IDE requirements</span><a class="ref-url" href="https://antigravity.google/docs/ide/getting-started">antigravity.google/docs/ide/getting-started</a></div></li>
-      <li><div><span class="ref-title">Antigravity IDE download</span><a class="ref-url" href="https://antigravity.google/download">antigravity.google/download</a></div></li>
-      <li><div><span class="ref-title">Homebrew installation</span><a class="ref-url" href="https://docs.brew.sh/Installation">docs.brew.sh/Installation</a></div></li>
-      <li><div><span class="ref-title">Homebrew support tiers</span><a class="ref-url" href="https://docs.brew.sh/Support-Tiers">docs.brew.sh/Support-Tiers</a></div></li>
-      <li><div><span class="ref-title">Microsoft WinGet</span><a class="ref-url" href="https://learn.microsoft.com/windows/package-manager/winget/">learn.microsoft.com/windows/package-manager/winget</a></div></li>
-      <li><div><span class="ref-title">App Installer (WinGet)</span><a class="ref-url" href="https://apps.microsoft.com/detail/9nblggh4nns1">apps.microsoft.com/detail/9nblggh4nns1</a></div></li>
-      <li><div><span class="ref-title">Git for Windows</span><a class="ref-url" href="https://git-scm.com/download/win">git-scm.com/download/win</a></div></li>
-      <li><div><span class="ref-title">Node.js</span><a class="ref-url" href="https://nodejs.org/">nodejs.org</a></div></li>
-      <li><div><span class="ref-title">Python for Windows</span><a class="ref-url" href="https://www.python.org/downloads/windows/">python.org/downloads/windows</a></div></li>
-      <li><div><span class="ref-title">GitHub immutable releases</span><a class="ref-url" href="https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases">docs.github.com/…/immutable-releases</a></div></li>
-    </ol>
-  </section>
-
-  <footer class="colophon">
-    <span>FOAD Dev Setup · v2.1.3</span>
-    <span>Windows · macOS</span>
-  </footer>
-  </div><!-- /lang-en -->
-
-  <!-- ############################################################ -->
-  <!-- #####################  ARABIC  ############################# -->
-  <!-- ############################################################ -->
-  <div class="lang" id="lang-ar" lang="ar" dir="rtl" hidden>
-
-  <header class="titleblock">
-    <div class="eyebrow">مرجع إعداد ورشة العمل · تثبيت خاضع للإشراف</div>
-    <h1 class="title">FOAD Dev Setup</h1>
-    <p class="subtitle">إعداد بيئة تطوير موجَّه للمبتدئين على ويندوز وماك: Git وNode.js وPython وAntigravity IDE وClaude Code.</p>
-    <div class="meta">
-      <span>الإصدار <b>2.1.3</b></span>
-      <span>الأنظمة <b>ويندوز · ماك</b></span>
-      <span>المدة <b>10–25 دقيقة</b></span>
-    </div>
-    <hr class="titlerule">
-    <hr class="titlerule-thin">
+  <header class="hero">
+    <div class="kicker">ورشة <bdi>Claude Code</bdi></div>
+    <h1>أهلًا بك. لنجهّز حاسوبك.</h1>
+    <p class="lead">قبل الورشة يحتاج حاسوبك إلى بضع أدوات مجانية: المساعد الذكي الذي ستعمل معه، والمحرّر الذي ستكتب فيه، والأدوات التي يعتمدان عليها.</p>
+    <p class="lead">كل ما تحتاجه موجود في هذه الصفحة. اختر نوع حاسوبك، ثم تابع من الأعلى إلى الأسفل: انسخ الأمر، ألصقه، واضغط Enter. المدة نحو ٢٠ دقيقة، ومرة واحدة فقط.</p>
   </header>
 
-  <section class="abstract">
-    <h2>الملخّص</h2>
-    <p>تصف هذه الوثيقة إجراء التثبيت الخاضع للإشراف لبيئة تطوير ورشة FOAD. يوفّر المثبّت Git وNode.js/npm وPython 3/pip وبيئة Google Antigravity IDE وClaude Code، إضافةً إلى أمر ومهارة تمهيدية لـ Claude ودليل نصي لسطر الأوامر يوضع على سطح المكتب. توثَّق طريقتان للتثبيت لكل نظام: سكربت المثبّت المثبَّت على إصدار محدد (الموصى به)، ومسار يدوي احتياطي خطوة بخطوة يستخدم أوامر المورّدين الموثّقة فقط. تشمل الوثيقة التحقق واستكشاف الأخطاء ومتطلبات سلامة التوزيع.</p>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§1</span><h2 class="sec-title">قبل أن يبدأ المتدربون</h2></div>
-    <p>تأكد أن لدى كل متدرب:</p>
-    <ul class="plain">
-      <li>من 10 إلى 25 دقيقة، واتصال إنترنت موثوق، وعدة غيغابايتات من المساحة الفارغة؛</li>
-      <li>صلاحية تثبيت البرامج — قد تطلب بعض المثبّتات موافقة المسؤول؛</li>
-      <li>اشتراك Claude مؤهّل أو حساب Anthropic Console أو مزوّد مدعوم — انظر <a href="https://code.claude.com/docs/en/authentication">مصادقة Claude Code</a> و<a href="https://claude.ai/upgrade">خطط claude.ai</a>؛</li>
-      <li>حساب Google إذا كانت الورشة تتطلب تسجيل الدخول إلى <a href="https://antigravity.google/">Antigravity IDE</a>.</li>
-    </ul>
-    <p>تعرض المثبّتات هذه القائمة وتطلب التأكيد قبل إجراء أي تغيير. تُحفَظ الملفات التمهيدية الموجودة ودليل سطح المكتب عند إعادة التشغيل.</p>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§2</span><h2 class="sec-title">التوزيع الموصى به</h2></div>
-    <p>للمتدربين، استخدم <strong>إصدارًا موقَّعًا ومرقَّمًا</strong> يوزّعه المدرّب. تحقق من بصمة SHA-256 المنشورة قبل فتحه.</p>
-    <ul class="plain">
-      <li>إصدارات ويندوز يجب أن تكون موقَّعة بتوقيع <a href="https://learn.microsoft.com/windows/win32/seccrypto/cryptography-tools">Authenticode</a>.</li>
-      <li>إصدارات ماك يجب أن تكون <a href="https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution">موقَّعة بمعرّف مطوّر Apple وموثَّقة (notarized)</a>.</li>
-      <li>لا تطلب من المتدربين تجاوز <a href="https://learn.microsoft.com/windows/security/operating-system-security/virus-and-threat-protection/microsoft-defender-smartscreen/">SmartScreen</a> أو <a href="https://support.apple.com/en-us/102445">Gatekeeper</a> لملف لم يتحققوا منه بأنفسهم.</li>
-    </ul>
-    <div class="note">
-      <span class="note-tag">تنبيه</span>
-      ملف DMG القديم <code class="inline">v1.0.0</code> لا يحتوي على المثبّت الحالي ويجب عدم توزيعه. إلى حين نشر ثنائيات <code class="inline">v2.1.3</code> موقَّعة، استخدم سكربتات المصدر المثبَّتة في الجزء الأول / الجزء الثاني أدناه، وفي جلسة إعداد خاضعة للإشراف فقط. تثبّت السكربتات مثبّت FOAD على الوسم المرقّم <a href="https://github.com/masterFoad/agent_setup/releases/tag/v2.1.3"><code class="inline">v2.1.3</code></a> وتنزّله قبل تنفيذه؛ ويُمنع نقل الوسوم المنشورة. تستخدم السكربتات مديري الحزم الرسميين ومثبّتات المورّدين الرسمية، فراجع ملاحظات الإصدار قبل كل ورشة.
+  <div class="chooser">
+    <h2>اختر حاسوبك</h2>
+    <div class="choices" role="tablist" aria-label="اختر حاسوبك">
+      <button class="choice" id="tab-mac-ar" role="tab" aria-selected="false" aria-controls="panel-mac-ar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+        <span class="choice-name">ماك</span>
+        <span class="choice-sub"><bdi>macOS</bdi></span>
+      </button>
+      <button class="choice" id="tab-win-ar" role="tab" aria-selected="false" aria-controls="panel-win-ar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 5.6 10.4 4.5v7.1H2.8zM11.4 4.4 21.2 3v8.6h-9.8zM2.8 12.5h7.6v7.1L2.8 18.5zM11.4 12.5h9.8V21l-9.8-1.4z"/></svg>
+        <span class="choice-name">ويندوز</span>
+        <span class="choice-sub"><bdi>Windows 10 / 11</bdi></span>
+      </button>
     </div>
-    <p>يمكن للمدرّبين مقارنة السكربتات المنزَّلة مع <code class="inline">SHA256SUMS</code> من الوسم نفسه قبل الجلسة. يجب أن تنشر الإصدارات الثنائية الموقَّعة بصماتٍ مولَّدة <em>بعد</em> التوقيع/التوثيق.</p>
-    <div class="code-label">البصمة — ماك</div>
-    <pre><code>shasum -a 256 /tmp/foad-install-mac.sh</code></pre>
-    <div class="code-label">البصمة — ويندوز</div>
-    <pre><code>Get-FileHash $env:TEMP\foad-install-windows.ps1 -Algorithm SHA256</code></pre>
-  </section>
-
-  <div class="part-switch" role="tablist" aria-label="النظام">
-    <button id="tab-mac-ar" role="tab" aria-selected="true" aria-controls="panel-mac-ar">
-      <span class="part-label">الجزء الأول</span>
-      <span class="part-name">macOS</span>
-    </button>
-    <button id="tab-win-ar" role="tab" aria-selected="false" aria-controls="panel-win-ar">
-      <span class="part-label">الجزء الثاني</span>
-      <span class="part-name">Windows</span>
-    </button>
+    <p class="detected" id="detected-ar"></p>
   </div>
 
-  <!-- ========== AR · PART I : MACOS ========== -->
-  <div class="platform-panel active" id="panel-mac-ar" role="tabpanel" aria-labelledby="tab-mac-ar">
+  <!-- ================= MAC ================= -->
+  <div class="platform-panel" id="panel-mac-ar" role="tabpanel" aria-labelledby="tab-mac-ar">
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§3</span><h2 class="sec-title">ماك — التثبيت الخاضع للإشراف</h2></div>
-      <p><strong>المتطلبات.</strong> نظام macOS 14 (Sonoma) أو أحدث — بما يوافق <a href="https://docs.brew.sh/Support-Tiers">مستويات دعم Homebrew</a>. معالج Apple Silicon أو Intel. تطبيق <strong>Terminal</strong> المدمج (Applications ← Utilities ← Terminal).</p>
+    <section class="step">
+      <span class="step-n">ما الذي ستثبّته</span>
+      <h2>خمس أدوات، جميعها مجانية</h2>
+      <ul class="kit">
+        <li><span class="kit-name"><bdi>Claude Code</bdi></span><span class="kit-what">المساعد الذكي الذي ستعمل معه طوال اليوم</span></li>
+        <li><span class="kit-name"><bdi>Antigravity IDE</bdi></span><span class="kit-what">التطبيق الذي ستكتب فيه الشيفرة</span></li>
+        <li><span class="kit-name"><bdi>Git</bdi></span><span class="kit-what">يحفظ تاريخ عملك، أشبه بتراجع بلا حدود</span></li>
+        <li><span class="kit-name"><bdi>Node.js</bdi></span><span class="kit-what">يشغّل مشاريع جافاسكربت على جهازك</span></li>
+        <li><span class="kit-name"><bdi>Python</bdi></span><span class="kit-what">يشغّل السكربتات التي يكتبها لك <bdi>Claude</bdi></span></li>
+      </ul>
+      <p>ويأتي معها <bdi>Homebrew</bdi>، وهو الأداة التي تثبّت البقية. أمر واحد يهيّئ كل شيء.</p>
+    </section>
 
-      <h3><span class="sub-num">3.1</span>شغّل المثبّت المثبَّت على الإصدار</h3>
-      <div class="code-label">Terminal</div>
+    <section class="step">
+      <span class="step-n">الخطوة ١</span>
+      <h2>شغّل التثبيت</h2>
+      <p>انسخ هذا، ألصقه في <bdi>Terminal</bdi>، واضغط Enter.</p>
+      <div class="code-label"><bdi>Terminal</bdi></div>
       <pre><code>curl -fsSL https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-mac.sh -o /tmp/foad-install-mac.sh
 /bin/bash /tmp/foad-install-mac.sh</code></pre>
+      <p>سيعرض لك ما سيثبّته ثم ينتظر. اضغط Enter مرة أخرى للمتابعة، ثم اتركه يعمل — يستغرق وقتًا، وقد يطلب كلمة مرور جهازك في أثنائه، وينتهي بملخّص.</p>
       <div class="note">
-        <span class="note-tag">لا تستخدم sudo</span>
-        لا تشغّل هذه الأوامر عبر <code class="inline">sudo</code> أبدًا. سيطلب Homebrew أو المثبّتات الفردية الصلاحيات عند الحاجة فقط. <strong>لا</strong> تمرّر السكربت مباشرة إلى <code class="inline">bash</code> — يرفض المثبّت هذا المسار لأن Homebrew يحتاج طرفية تفاعلية.
-      </div>
-
-      <h3><span class="sub-num">3.2</span>ماذا يفعل المثبّت</h3>
-      <div class="tablewrap">
-        <table>
-          <caption>الجدول 1 · خطوات مثبّت ماك بالترتيب</caption>
-          <thead><tr><th style="width:36px">#</th><th style="width:180px">الخطوة</th><th>ما يحدث</th></tr></thead>
-          <tbody>
-            <tr><td class="stepnum">1</td><td><span class="stepname">الموافقة الأولية</span></td><td>يعرض توقعات الوقت والمساحة وصلاحيات المسؤول والحساب وتغييرات الملفات. اضغط Enter للمتابعة أو <code>q</code> للإلغاء.</td></tr>
-            <tr><td class="stepnum">2</td><td><span class="stepname">فحص الجهاز والإنترنت</span></td><td>يتحقق من macOS (Darwin)، ويرفض التشغيل بصلاحيات <code>sudo</code>/root، ويتطلب macOS ≥ 14، ويتأكد من إمكانية الوصول إلى GitHub.</td></tr>
-            <tr><td class="stepnum">3</td><td><span class="stepname">فحص Homebrew</span></td><td>يستخدم <code>brew</code> الموجود، وإلا يشغّل <a href="https://docs.brew.sh/Installation">مثبّت Homebrew الرسمي</a>. قد يطلب التثبيت الأول كلمة مرور جهازك وتثبيت Xcode Command Line Tools.</td></tr>
-            <tr><td class="stepnum">4</td><td><span class="stepname">حفظ PATH</span></td><td>يضيف مسارات Homebrew والأدوات (<code>~/.local/bin</code>، <code>~/.claude/bin</code>، <code>~/.claude/local</code>) إلى <code>~/.zprofile</code> / <code>~/.bash_profile</code>.</td></tr>
-            <tr><td class="stepnum">5</td><td><span class="stepname">تحديث Homebrew</span></td><td><code>brew update</code>. الفشل هنا تحذير وليس توقفًا.</td></tr>
-            <tr><td class="stepnum">6</td><td><span class="stepname">تثبيت Git</span></td><td><code>brew install git</code></td></tr>
-            <tr><td class="stepnum">7</td><td><span class="stepname">تثبيت Node.js + npm</span></td><td><code>brew install node</code></td></tr>
-            <tr><td class="stepnum">8</td><td><span class="stepname">تثبيت Python 3 + pip</span></td><td><code>brew install python</code></td></tr>
-            <tr><td class="stepnum">9</td><td><span class="stepname">تثبيت Antigravity IDE</span></td><td><code>brew install --cask antigravity-ide</code>. إذا لم تتوفر الحزمة تُفتح <a href="https://antigravity.google/download">صفحة التنزيل</a> في المتصفح.</td></tr>
-            <tr><td class="stepnum">10</td><td><span class="stepname">تثبيت Claude Code</span></td><td>يجرّب بالترتيب: المثبّت الأصلي (<code>curl -fsSL https://claude.ai/install.sh</code>)، ثم <code>brew install --cask claude-code</code>، ثم <code>npm install -g @anthropic-ai/claude-code</code>.</td></tr>
-            <tr><td class="stepnum">11</td><td><span class="stepname">إنشاء الملفات التمهيدية</span></td><td>يكتب مهارة تمهيدية في <code>~/.claude/skills/summarize-changes/</code> وأمرًا تمهيديًا في <code>~/.claude/commands/</code>. تُحفَظ الملفات الموجودة.</td></tr>
-            <tr><td class="stepnum">12</td><td><span class="stepname">إنشاء دليل سطح المكتب</span></td><td>يكتب <code>~/Desktop/FOAD-terminal-basics.txt</code> ويفتحه في TextEdit في النهاية.</td></tr>
-            <tr><td class="stepnum">13</td><td><span class="stepname">التحقق</span></td><td>يشغّل <code>--version</code> لكل من <code>git</code> و<code>node</code> و<code>npm</code> و<code>python3</code> و<code>pip3</code> و<code>claude</code>، ثم يطبع ملخص ✔/⚠/✘ والخطوات التالية.</td></tr>
-          </tbody>
-        </table>
+        <span class="note-tag">لا تضف <bdi>sudo</bdi></span>
+        شغّل الأمر كما هو تمامًا. يتوقّف التثبيت عمدًا إذا سبقته بـ<code class="inline">sudo</code>.
       </div>
     </section>
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§4</span><h2 class="sec-title">ماك — الحالة الأسوأ: التثبيت يدويًا</h2></div>
-      <p>إذا توقف المثبّت في منتصف الطريق ولم تُجدِ إعادة التشغيل، نفّذ هذه المقاطع في Terminal <strong>واحدًا تلو الآخر وبالترتيب</strong>، وتحقق من نتيجة كل مقطع قبل الانتقال إلى التالي. لا شيء هنا خاص بـ FOAD: كل أمر هو التثبيت الموثَّق من المورّد نفسه. تجاوز أي مقطع تعمل أداته بالفعل.</p>
+    <section class="step">
+      <span class="step-n">الخطوة ٢</span>
+      <h2>أغلق <bdi>Terminal</bdi>، افتحه من جديد، ثم تحقّق</h2>
+      <p>لا تظهر الأدوات الجديدة إلا في نافذة جديدة. أغلق <bdi>Terminal</bdi> تمامًا، افتحه مرة أخرى، ثم شغّل:</p>
+      <div class="code-label"><bdi>Terminal</bdi></div>
+      <pre><code>git --version
+node --version
+npm --version
+python3 --version
+claude --version</code></pre>
+      <p>يجب أن يطبع كل سطر رقم إصدار. إن لم يفعل أحدها، أعد تشغيل أمر الخطوة ١ — فهو يكمل من حيث توقّف ويتجاوز ما نجح سابقًا.</p>
+    </section>
 
-      <h3><span class="sub-num">4.1</span>Homebrew <span class="aside">— تجاوزه إذا كان <code class="inline">brew --version</code> يطبع رقم إصدار</span></h3>
-      <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+    <section class="step">
+      <span class="step-n">الخطوة ٣</span>
+      <h2>سجّل الدخول إلى <bdi>Claude Code</bdi></h2>
+      <div class="code-label"><bdi>Terminal</bdi></div>
+      <pre><code>claude</code></pre>
+      <p>سيفتح المتصفح لتسجيل الدخول. استخدم حساب <bdi>Claude</bdi> باشتراك مدفوع — <bdi>Pro</bdi> أو أعلى.</p>
+    </section>
 
-      <h3><span class="sub-num">4.2</span>أضف Homebrew إلى PATH، ثم أغلق Terminal وأعد فتحه</h3>
-      <pre><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile   <span class="cmt"># Apple Silicon</span>
-echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile      <span class="cmt"># Intel Macs</span>
+    <section class="step">
+      <span class="step-n">الخطوة ٤</span>
+      <h2>افتح المحرّر</h2>
+      <p>افتح <strong><bdi>Antigravity IDE</bdi></strong> من مجلد التطبيقات وسجّل الدخول بحساب Google. بهذا يكون حاسوبك جاهزًا.</p>
+    </section>
+
+    <details class="planb">
+      <summary>الخطة البديلة: ثبّت أداة واحدة في كل مرة</summary>
+      <div class="planb-body">
+        <p>استخدمها فقط إذا ظل أمر الخطوة ١ يفشل. ثبّت كل أداة بنفسك، كتلة واحدة في كل مرة، لتعرف أيّها تحديدًا يفشل. تجاوز أي أداة تعمل أصلًا.</p>
+
+        <h3><bdi>Homebrew</bdi></h3>
+        <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+
+        <h3>اجعل جهازك يجد <bdi>Homebrew</bdi></h3>
+        <p>السطر الأول لمعالجات <bdi>Apple Silicon</bdi>، والثاني لأجهزة <bdi>Intel</bdi> الأقدم. ثم أغلق <bdi>Terminal</bdi> وافتحه من جديد.</p>
+        <pre><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile   <span class="cmt"># Apple Silicon</span>
+echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile      <span class="cmt"># Intel</span>
 eval "$(brew shellenv)"</code></pre>
 
-      <h3><span class="sub-num">4.3</span>Git</h3>
-      <pre><code>brew install git</code></pre>
+        <h3><bdi>Git</bdi></h3>
+        <pre><code>brew install git</code></pre>
 
-      <h3><span class="sub-num">4.4</span>Node.js + npm</h3>
-      <pre><code>brew install node</code></pre>
+        <h3><bdi>Node.js</bdi> و<bdi>npm</bdi></h3>
+        <pre><code>brew install node</code></pre>
 
-      <h3><span class="sub-num">4.5</span>Python 3 + pip</h3>
-      <pre><code>brew install python</code></pre>
+        <h3><bdi>Python</bdi></h3>
+        <pre><code>brew install python</code></pre>
 
-      <h3><span class="sub-num">4.6</span>Antigravity IDE <span class="aside">— إذا لم تتوفر الحزمة نزّلها من <a href="https://antigravity.google/download">antigravity.google/download</a></span></h3>
-      <pre><code>brew install --cask antigravity-ide</code></pre>
+        <h3><bdi>Antigravity IDE</bdi></h3>
+        <p>إذا فشل هذا، نزّله من <a href="https://antigravity.google/download">antigravity.google/download</a>.</p>
+        <pre><code>brew install --cask antigravity-ide</code></pre>
 
-      <h3><span class="sub-num">4.7</span>Claude Code <span class="aside">— مثبّت Anthropic الرسمي</span></h3>
-      <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
+        <h3><bdi>Claude Code</bdi></h3>
+        <pre><code>curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh
 /bin/bash /tmp/claude-install.sh</code></pre>
-      <p>إذا فشل، جرّب <code class="inline">brew install --cask claude-code</code>، ثم <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
+        <p>إن لم ينجح: <code class="inline">brew install --cask claude-code</code>، وإن فشل أيضًا: <code class="inline">npm install -g @anthropic-ai/claude-code</code>.</p>
 
-      <h3><span class="sub-num">4.8</span>أضف مسارات Claude Code، ثم أغلق Terminal وأعد فتحه</h3>
-      <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
+        <h3>اجعل جهازك يجد <bdi>Claude</bdi></h3>
+        <p>ثم أغلق <bdi>Terminal</bdi> وافتحه من جديد.</p>
+        <pre><code>echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$HOME/.claude/local:$PATH"' >> ~/.zprofile</code></pre>
 
-      <h3><span class="sub-num">4.9</span>تحقق من كل شيء <span class="aside">— يجب أن يطبع كل سطر رقم إصدار</span></h3>
-      <pre><code>git --version
+        <h3>تحقّق من كل شيء</h3>
+        <pre><code>git --version
 node --version
 npm --version
 python3 --version
 pip3 --version
 claude --version</code></pre>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§5</span><h2 class="sec-title">ماك — استكشاف الأخطاء</h2></div>
-      <ul class="plain">
-        <li>انسخ الخطوة الفاشلة كاملة مع المخرجات التي سبقتها وأرسلها إلى المدرّب.</li>
-        <li>حقول كلمة المرور لا تعرض أي حروف أثناء الكتابة.</li>
-        <li>يتطلب الإعداد الكامل macOS 14 أو أحدث بما يوافق <a href="https://docs.brew.sh/Support-Tiers">الحد الأدنى المدعوم في Homebrew</a>.</li>
-        <li>ظهور <code class="inline">command not found: brew</code> في Terminal جديد ← أغلق Terminal وأعد فتحه مرة واحدة؛ يكتب المثبّت <code class="inline">eval "$(brew shellenv)"</code> في <code class="inline">~/.zprofile</code>.</li>
-        <li>لا تُعد التشغيل بـ <code class="inline">sudo</code> أبدًا؛ يتوقف المثبّت إذا اكتشف صلاحيات root.</li>
-      </ul>
-    </section>
+      </div>
+    </details>
   </div>
 
-  <!-- ========== AR · PART II : WINDOWS ========== -->
+  <!-- ================= WINDOWS ================= -->
   <div class="platform-panel" id="panel-win-ar" role="tabpanel" aria-labelledby="tab-win-ar">
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§3</span><h2 class="sec-title">ويندوز — التثبيت الخاضع للإشراف</h2></div>
-      <p><strong>المتطلبات.</strong> ويندوز 10 بناء 17763 (الإصدار 1809) أو أحدث — الحد الأدنى لـ <a href="https://learn.microsoft.com/windows/package-manager/winget/">WinGet</a> — و<strong>Windows PowerShell</strong> (ابدأ ← اكتب <code class="inline">PowerShell</code>). <strong>لا</strong> تستخدم طرفية WSL/أوبونتو؛ لا حاجة إلى WSL في أي مرحلة من هذه الورشة.</p>
+    <section class="step">
+      <span class="step-n">ما الذي ستثبّته</span>
+      <h2>خمس أدوات، جميعها مجانية</h2>
+      <ul class="kit">
+        <li><span class="kit-name"><bdi>Claude Code</bdi></span><span class="kit-what">المساعد الذكي الذي ستعمل معه طوال اليوم</span></li>
+        <li><span class="kit-name"><bdi>Antigravity IDE</bdi></span><span class="kit-what">التطبيق الذي ستكتب فيه الشيفرة</span></li>
+        <li><span class="kit-name"><bdi>Git</bdi></span><span class="kit-what">يحفظ تاريخ عملك، أشبه بتراجع بلا حدود</span></li>
+        <li><span class="kit-name"><bdi>Node.js</bdi></span><span class="kit-what">يشغّل مشاريع جافاسكربت على جهازك</span></li>
+        <li><span class="kit-name"><bdi>Python</bdi></span><span class="kit-what">يشغّل السكربتات التي يكتبها لك <bdi>Claude</bdi></span></li>
+      </ul>
+      <p>يثبّتها ويندوز عبر مثبّت التطبيقات الخاص به، لذا سترى نوافذ تنزيل رسمية من مايكروسوفت تمرّ أمامك.</p>
+    </section>
 
-      <h3><span class="sub-num">3.1</span>شغّل المثبّت المثبَّت على الإصدار</h3>
-      <div class="code-label">PowerShell</div>
+    <section class="step">
+      <span class="step-n">الخطوة ١</span>
+      <h2>شغّل التثبيت</h2>
+      <p>انسخ هذا، ألصقه في <bdi>PowerShell</bdi>، واضغط Enter.</p>
+      <div class="code-label"><bdi>PowerShell</bdi></div>
       <pre><code>$path = Join-Path $env:TEMP "foad-install-windows.ps1"
 Invoke-WebRequest "https://raw.githubusercontent.com/masterFoad/agent_setup/v2.1.3/install-windows.ps1" -OutFile $path
 powershell -NoProfile -ExecutionPolicy Bypass -File $path</code></pre>
-      <p>يتحقق المثبّت من Claude باستخدام PATH الذي ستراه نافذة PowerShell جديدة فعلًا فقط. إذا ترك إعداد FOAD قديم <code class="inline">claude.exe</code> مثبّتًا لكن غير قابل للوصول، فإن إعادة تشغيل هذا الإصدار تُصلح PATH الخاص بالمستخدم.</p>
+      <p>سيعرض لك ما سيثبّته ثم ينتظر. اضغط Enter مرة أخرى للمتابعة، ثم اتركه يعمل — يستغرق وقتًا وينتهي بملخّص.</p>
       <div class="note">
-        <span class="note-tag">لا حاجة إلى WSL</span>
-        إذا عرض Antigravity تثبيت WSL أو فتحه، فاختر <strong>Skip</strong> أو <strong>Cancel</strong> أو <strong>Not now</strong>. في قائمة الطرفية داخل Antigravity اختر <strong>Select Default Profile ← PowerShell</strong>، وأغلق الطرفية الحالية وافتح واحدة جديدة.
+        <span class="note-tag">أمران أثناء التشغيل</span>
+        اضغط <strong>Yes</strong> على أي نافذة تسأل «هل تريد السماح لهذا التطبيق بإجراء تغييرات؟» — وقد تختبئ خلف النوافذ الأخرى، فتفقّد شريط المهام. كما أن المحرّر تنزيل كبير قد يبدو متجمّدًا لدقائق، وهو ليس كذلك.
       </div>
-
-      <h3><span class="sub-num">3.2</span>ماذا يفعل المثبّت</h3>
-      <div class="tablewrap">
-        <table>
-          <caption>الجدول 2 · خطوات مثبّت ويندوز بالترتيب</caption>
-          <thead><tr><th style="width:36px">#</th><th style="width:180px">الخطوة</th><th>ما يحدث</th></tr></thead>
-          <tbody>
-            <tr><td class="stepnum">1</td><td><span class="stepname">بدء سجل سطح المكتب</span></td><td>يسجّل التشغيل كاملًا في <code>Desktop\FOAD-setup-log.txt</code> (يدعم سطح مكتب محوَّلًا إلى OneDrive).</td></tr>
-            <tr><td class="stepnum">2</td><td><span class="stepname">الموافقة الأولية</span></td><td>يعرض توقعات الوقت والمساحة وUAC والحساب وتغييرات الملفات، بما فيها ملاحظة WSL. اضغط Enter للمتابعة أو <code>Q</code> للإلغاء.</td></tr>
-            <tr><td class="stepnum">3</td><td><span class="stepname">فحص الجهاز</span></td><td>يتحقق من بناء ويندوز (≥ 17763) والاتصال بالإنترنت.</td></tr>
-            <tr><td class="stepnum">4</td><td><span class="stepname">فحص WinGet</span></td><td>يستخدم WinGet إن وُجد؛ وإلا يحاول التسجيل / الاسترداد من متجر مايكروسوفت لتطبيق <a href="https://apps.microsoft.com/detail/9nblggh4nns1"><strong>App Installer</strong></a>، ثم <code>winget source update</code>.</td></tr>
-            <tr><td class="stepnum">5</td><td><span class="stepname">تثبيت Git</span></td><td><code>winget install --id Git.Git --source winget</code></td></tr>
-            <tr><td class="stepnum">6</td><td><span class="stepname">تثبيت Node.js + npm</span></td><td><code>winget install --id OpenJS.NodeJS.LTS --source winget</code></td></tr>
-            <tr><td class="stepnum">7</td><td><span class="stepname">تثبيت Antigravity IDE</span></td><td><code>winget install --id Google.AntigravityIDE</code>. هذا هو التنزيل <strong>الكبير</strong> وقد يبدو متجمدًا — لكنه ليس كذلك. الاحتياطي: تُفتح <a href="https://antigravity.google/download">صفحة التنزيل</a> في المتصفح. <strong>ملاحظة:</strong> <code>Google.Antigravity</code> (بدون <code>IDE</code>) تطبيق مختلف — منسّق وكلاء بلا محرر. لا تثبّته بدلًا منه.</td></tr>
-            <tr><td class="stepnum">8</td><td><span class="stepname">تثبيت Python 3 + pip</span></td><td>أول متاح من <code>Python.Python.3.14</code> و<code>3.13</code> و<code>3.12</code>. الاحتياطي: تُفتح صفحة <a href="https://www.python.org/downloads/windows/">Python for Windows</a> — فعّل خيار <strong>"Add python.exe to PATH"</strong>.</td></tr>
-            <tr><td class="stepnum">9</td><td><span class="stepname">تثبيت Claude Code</span></td><td>يُصلح تثبيتًا موجودًا أولًا (PATH فقط)، ثم المثبّت الأصلي (<code>https://claude.ai/install.ps1</code> في عملية PowerShell منفصلة)، ثم حزمة <code>Anthropic.ClaudeCode</code> عبر WinGet. يجب أن يُنتج كل مسار <strong>توقيع Authenticode صالحًا من Anthropic</strong> وأمر <code>claude</code> يظهر على PATH الدائم للمستخدم، وإلا اعتُبر فاشلًا.</td></tr>
-            <tr><td class="stepnum">10</td><td><span class="stepname">إنشاء ملفات الورشة</span></td><td>يكتب مهارة تمهيدية في <code>%USERPROFILE%\.claude\skills\summarize-changes\</code> وأمرًا في <code>%USERPROFILE%\.claude\commands\</code>، إضافة إلى <code>Desktop\FOAD-terminal-basics-v2.1.3.txt</code> (يُفتح في Notepad في النهاية).</td></tr>
-            <tr><td class="stepnum">11</td><td><span class="stepname">الفحص النهائي</span></td><td>يعيد التحقق من <code>git</code> و<code>node</code> و<code>npm</code> و<code>python</code>/<code>py</code> و<code>pip</code> و<code>claude</code> باستخدام <strong>PATH المحفوظ للجهاز والمستخدم فقط</strong> — أي ما ستراه نافذة PowerShell جديدة فعلًا — ثم يطبع ملخصًا مع سطر «كيف تُصلح» لكل عنصر فاشل.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul class="plain" style="margin-top:16px">
-        <li>اضغط <strong>Yes</strong> على أي نافذة UAC «هل تريد السماح لهذا التطبيق بإجراء تغييرات؟». قد تختبئ خلف نوافذ أخرى — راقب شريط المهام.</li>
-        <li>يتجاهل الفحص النهائي عمدًا PATH الخاص بالجلسة الحالية، لذا فإن الملخص الأخضر يعني أن الأدوات ستعمل فعلًا في نافذة جديدة. افتح مع ذلك نافذة PowerShell <strong>جديدة</strong> بعد الانتهاء.</li>
-        <li>مجلدات <code class="inline">.claude</code> ودليل سطح المكتب المرقّم وسجل الإعداد هي الملفات الوحيدة التي ينشئها هذا السكربت.</li>
-      </ul>
     </section>
 
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§4</span><h2 class="sec-title">ويندوز — الحالة الأسوأ: التثبيت يدويًا</h2></div>
-      <p>إذا توقف المثبّت في منتصف الطريق ولم تُجدِ إعادة التشغيل، نفّذ هذه المقاطع في <strong>Windows PowerShell</strong> (وليس WSL) <strong>واحدًا تلو الآخر وبالترتيب</strong>، وتحقق من نتيجة كل مقطع قبل الانتقال إلى التالي. لا شيء هنا خاص بـ FOAD: كل أمر هو التثبيت الموثَّق من المورّد نفسه. تجاوز أي مقطع تعمل أداته بالفعل. أجب <strong>Yes</strong> على أي نافذة UAC — قد تختبئ خلف نوافذ أخرى.</p>
+    <section class="step">
+      <span class="step-n">الخطوة ٢</span>
+      <h2>أغلق <bdi>PowerShell</bdi>، افتحه من جديد، ثم تحقّق</h2>
+      <p>لا تظهر الأدوات الجديدة إلا في نافذة جديدة. أغلق <bdi>PowerShell</bdi>، افتح نافذة جديدة، ثم شغّل:</p>
+      <div class="code-label"><bdi>PowerShell</bdi></div>
+      <pre><code>git --version
+node --version
+npm --version
+python --version
+claude --version</code></pre>
+      <p>يجب أن يطبع كل سطر رقم إصدار. إن لم يفعل أحدها، أعد تشغيل أمر الخطوة ١ — فهو يكمل من حيث توقّف ويتجاوز ما نجح سابقًا.</p>
+    </section>
 
-      <h3><span class="sub-num">4.1</span>WinGet <span class="aside">— تجاوزه إذا كان يطبع رقم إصدار؛ وإلا ثبّت <a href="https://apps.microsoft.com/detail/9nblggh4nns1">App Installer</a> وأعد فتح PowerShell</span></h3>
-      <pre><code>winget --version</code></pre>
+    <section class="step">
+      <span class="step-n">الخطوة ٣</span>
+      <h2>سجّل الدخول إلى <bdi>Claude Code</bdi></h2>
+      <div class="code-label"><bdi>PowerShell</bdi></div>
+      <pre><code>claude</code></pre>
+      <p>سيفتح المتصفح لتسجيل الدخول. استخدم حساب <bdi>Claude</bdi> باشتراك مدفوع — <bdi>Pro</bdi> أو أعلى.</p>
+    </section>
 
-      <h3><span class="sub-num">4.2</span>Git</h3>
-      <pre><code>winget install --id Git.Git --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+    <section class="step">
+      <span class="step-n">الخطوة ٤</span>
+      <h2>افتح المحرّر</h2>
+      <p>افتح <strong><bdi>Antigravity IDE</bdi></strong> من قائمة ابدأ وسجّل الدخول بحساب Google.</p>
+      <div class="note">
+        <span class="note-tag">انتبه لأمرين</span>
+        افتح التطبيق المسمّى <strong><bdi>Antigravity IDE</bdi></strong> — فهناك تطبيق مختلف اسمه <bdi>Antigravity</bdi> فقط. وإذا عرض عليك تثبيت <bdi>WSL</bdi> فاختر «تخطّي» أو «إلغاء»؛ ومن طرفية المحرّر اختر ملف تعريف <strong><bdi>PowerShell</bdi></strong>، وإلا بدا <code class="inline">claude</code> مفقودًا وهو مثبّت فعلًا.
+      </div>
+      <p>بهذا يكون حاسوبك جاهزًا.</p>
+    </section>
 
-      <h3><span class="sub-num">4.3</span>Node.js + npm</h3>
-      <pre><code>winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+    <details class="planb">
+      <summary>الخطة البديلة: ثبّت أداة واحدة في كل مرة</summary>
+      <div class="planb-body">
+        <p>استخدمها فقط إذا ظل أمر الخطوة ١ يفشل. ثبّت كل أداة بنفسك، كتلة واحدة في كل مرة، لتعرف أيّها تحديدًا يفشل. تجاوز أي أداة تعمل أصلًا، واضغط <strong>Yes</strong> على أي نافذة أذونات.</p>
 
-      <h3><span class="sub-num">4.4</span>Antigravity IDE <span class="aside">— التنزيل الكبير؛ قد يبدو متجمدًا لعدة دقائق. لاحظ اللاحقة <code class="inline">IDE</code>.</span></h3>
-      <pre><code>winget install --id Google.AntigravityIDE --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
-      <p>الاحتياطي: <a href="https://antigravity.google/download">antigravity.google/download</a>. تذكّر أن <code class="inline">Google.Antigravity</code> (بدون <code class="inline">IDE</code>) تطبيق مختلف.</p>
+        <h3>تحقّق من مثبّت تطبيقات ويندوز</h3>
+        <p>إن طبع رقم إصدار فتابع. وإن لم يفعل، ثبّت <strong><bdi>App Installer</bdi></strong> من <a href="https://apps.microsoft.com/detail/9nblggh4nns1">متجر مايكروسوفت</a>، ثم أعد فتح <bdi>PowerShell</bdi>.</p>
+        <pre><code>winget --version</code></pre>
 
-      <h3><span class="sub-num">4.5</span>Python 3 + pip <span class="aside">— جرّبها بالترتيب وتوقف عند أول أمر ينجح</span></h3>
-      <pre><code>winget install --id Python.Python.3.14 --exact --source winget --accept-package-agreements --accept-source-agreements
+        <h3><bdi>Git</bdi></h3>
+        <pre><code>winget install --id Git.Git --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3><bdi>Node.js</bdi> و<bdi>npm</bdi></h3>
+        <pre><code>winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3><bdi>Antigravity IDE</bdi></h3>
+        <p>هذا هو التنزيل الكبير، وقد يبدو متجمّدًا لدقائق. لاحظ <code class="inline">IDE</code> في نهاية الاسم فهي مهمّة. وإن فشل، نزّله من <a href="https://antigravity.google/download">antigravity.google/download</a>.</p>
+        <pre><code>winget install --id Google.AntigravityIDE --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+
+        <h3><bdi>Python</bdi></h3>
+        <p>جرّبها بالترتيب وتوقّف عند أول ما ينجح. وإن لم ينجح أيّ منها، ثبّت من <a href="https://www.python.org/downloads/windows/">python.org</a> مع تفعيل خيار <strong><bdi>Add python.exe to PATH</bdi></strong>.</p>
+        <pre><code>winget install --id Python.Python.3.14 --exact --source winget --accept-package-agreements --accept-source-agreements
 winget install --id Python.Python.3.13 --exact --source winget --accept-package-agreements --accept-source-agreements
 winget install --id Python.Python.3.12 --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
-      <p>الاحتياطي: <a href="https://www.python.org/downloads/windows/">python.org/downloads/windows</a>، مع تفعيل <strong>"Add python.exe to PATH"</strong>.</p>
 
-      <h3><span class="sub-num">4.6</span>Claude Code <span class="aside">— يُنزَّل أولًا ثم يُشغَّل، لترى ما ستنفّذه</span></h3>
-      <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
+        <h3><bdi>Claude Code</bdi></h3>
+        <pre><code>$claudeInstaller = Join-Path $env:TEMP "claude-install.ps1"
 Invoke-WebRequest "https://claude.ai/install.ps1" -OutFile $claudeInstaller -UseBasicParsing
 powershell -NoProfile -ExecutionPolicy Bypass -File $claudeInstaller stable</code></pre>
-      <p>إذا فشل، استخدم حزمة WinGet الرسمية بدلًا منه:</p>
-      <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
+        <p>وإن فشل، جرّب هذا بدلًا منه:</p>
+        <pre><code>winget install --id Anthropic.ClaudeCode --exact --source winget --accept-package-agreements --accept-source-agreements</code></pre>
 
-      <h3><span class="sub-num">4.7</span>أضف Claude Code إلى PATH بشكل دائم <span class="aside">— فقط إذا قالت الخطوة 4.9 إن <code class="inline">claude</code> مفقود</span></h3>
-      <pre><code>$claudeDir = Join-Path $HOME ".local\bin"
+        <h3>فقط إذا ظل <bdi>claude</bdi> مفقودًا</h3>
+        <p>هذا يخبر ويندوز بمكانه بشكل دائم. ثم أغلق <bdi>PowerShell</bdi> وافتح نافذة جديدة.</p>
+        <pre><code>$claudeDir = Join-Path $HOME ".local\bin"
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($userPath -notlike "*$claudeDir*") {
     [Environment]::SetEnvironmentVariable("Path", "$userPath;$claudeDir", "User")
 }</code></pre>
-      <p>عدّل المجلد إذا ثُبّت Claude في مكان آخر.</p>
 
-      <h3><span class="sub-num">4.8</span>أغلق PowerShell وافتح نافذة جديدة</h3>
-      <p>تغييرات PATH لا تصل إلى النافذة التي أجرتها.</p>
-
-      <h3><span class="sub-num">4.9</span>تحقق من كل شيء <span class="aside">— يجب أن يطبع كل سطر رقم إصدار</span></h3>
-      <pre><code>git --version
+        <h3>تحقّق من كل شيء</h3>
+        <pre><code>git --version
 node --version
 npm --version
 python --version
 pip --version
 claude --version</code></pre>
-
-      <h3><span class="sub-num">4.10</span>تأكد أن نافذة جديدة فعلًا ترى Claude</h3>
-      <p>هذا هو الفحص الذي يجريه المثبّت، وهو الذي يكشف PATH لم يُحفَظ قط.</p>
-      <pre><code>$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-$env:Path = "$machinePath;$userPath"
-claude --version</code></pre>
-    </section>
-
-    <section class="sec">
-      <div class="sec-head"><span class="sec-num">§5</span><h2 class="sec-title">ويندوز — استكشاف الأخطاء</h2></div>
-      <ul class="plain">
-        <li>أرسل <code class="inline">FOAD-setup-log.txt</code> من سطح المكتب إلى المدرّب.</li>
-        <li>إذا كان <code class="inline">claude</code> مفقودًا في نافذة PowerShell عادية، أعد تشغيل الإعداد الحالي؛ فهو يُصلح PATH الدائم للمستخدم ويتحقق منه. إذا استمر الفشل، أرسل <code class="inline">FOAD-setup-log.txt</code> إلى المدرّب.</li>
-        <li>إذا كان <code class="inline">claude</code> مفقودًا داخل Antigravity فقط، ألغِ أي نافذة WSL، واختر <strong>Select Default Profile ← PowerShell</strong>، وأغلق الطرفية الحالية وأنشئ واحدة جديدة. لا حاجة إلى WSL.</li>
-        <li>تنزيلات WinGet الكبيرة قد تبدو متوقفة؛ ابحث عن نافذة UAC مخفية في شريط المهام.</li>
-        <li>إذا لم يُتعرَّف على <code class="inline">winget</code>، ثبّت <strong>App Installer</strong> من <a href="https://apps.microsoft.com/detail/9nblggh4nns1">متجر مايكروسوفت</a> وأعد التشغيل.</li>
-        <li>إذا كان <code class="inline">python</code> يفتح متجر مايكروسوفت بدل التشغيل، أعد تثبيت Python مع تفعيل <strong>"Add python.exe to PATH"</strong>، أو استخدم <code class="inline">py --version</code>.</li>
-        <li>تحذير «لا يوجد توقيع Anthropic صالح» يعني أن ملف Claude على القرص ليس النسخة الرسمية الموقَّعة — لا تلتف عليه؛ أعد تشغيل الإعداد وأبلغ عن المشكلة.</li>
-        <li>مسار تسجيل WinGet / الاسترداد من المتجر يحتاج تحققًا على جهاز ويندوز افتراضي نظيف قبل كل ورشة.</li>
-      </ul>
-    </section>
+      </div>
+    </details>
   </div>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§6</span><h2 class="sec-title">بعد التثبيت</h2></div>
-    <ol class="plain">
-      <li>أغلق PowerShell أو Terminal وأعد فتحه.</li>
-      <li>شغّل <code class="inline">claude</code> واتبع تعليمات تسجيل الدخول (أو اكتب <code class="inline">/login</code>). يتطلب Claude Code خطة Claude <strong>مدفوعة</strong> (Pro فأعلى) أو حساب Anthropic Console أو مزوّدًا مدعومًا — انظر <a href="https://code.claude.com/docs/en/authentication">المصادقة</a>.</li>
-      <li>افتح Google Antigravity IDE (قائمة ابدأ في ويندوز، Applications في ماك) وسجّل الدخول بحساب Google. في ويندوز، افتح <strong>Antigravity IDE</strong> وليس التطبيق المنفصل المسمى «Antigravity» فقط.</li>
-      <li>اقرأ دليل FOAD لسطر الأوامر على سطح المكتب (<code class="inline">FOAD-terminal-basics-v&lt;version&gt;.txt</code> في ويندوز، <code class="inline">FOAD-terminal-basics.txt</code> في ماك).</li>
-    </ol>
-    <div class="code-label">التحقق</div>
-    <pre><code>git --version
-node --version
-npm --version
-python --version     <span class="cmt"># Windows</span>
-python3 --version    <span class="cmt"># macOS</span>
-claude --version</code></pre>
-    <p>إذا كان الإعداد ناقصًا، اتبع الملخص النهائي وأعد التشغيل. تُحفَظ ملفات الورشة الموجودة، لكن الإعداد ليس أداة عامة للتراجع أو لإزالة حزم الطرف الثالث.</p>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§7</span><h2 class="sec-title">حزم الإصدار وسياسة الصيانة</h2></div>
-    <p><strong>بناء الإصدارات.</strong> انظر <code class="inline">packaging/README.md</code>. يتطلب بناء الإصدار شجرة عمل نظيفة، ووسم <code class="inline">HEAD</code> مطابقًا تمامًا لـ <code class="inline">v$(cat VERSION)</code>، وتطابق إصدارات السكربتات والحزم. يُنتج الباني ملف <code class="inline">.sha256</code> بجانب كل حزمة. المتغير <code class="inline">FOAD_ALLOW_UNTAGGED_BUILD=1</code> متاح للبناءات الاختبارية المحلية فقط.</p>
-    <p><strong>سياسة الصيانة.</strong></p>
-    <ul class="plain">
-      <li>لا تنقل وسم إصدار منشورًا ولا تستبدل ملف إصدار موجودًا أبدًا.</li>
-      <li>سجّل نسخة المصدر (commit) والبصمات في ملاحظات الإصدار.</li>
-      <li>اختبر ويندوز بمستخدم عادي مع بيانات اعتماد مسؤول منفصلة.</li>
-      <li>اختبر ماك على معالجات Apple Silicon وIntel حيثما كان مدعومًا.</li>
-      <li>شغّل سير التحقق — بما فيه <code class="inline">tests/test_release_contract.py</code> وفحص PATH لويندوز في <code class="inline">tests/test_windows_path.ps1</code> — وتحقق من مسارات الفشل والاسترداد قبل التوزيع.</li>
-    </ul>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><span class="sec-num">§8</span><h2 class="sec-title">المراجع</h2></div>
-    <ol class="refs">
-      <li><div><span class="ref-title">إعداد Claude Code</span><a class="ref-url" href="https://code.claude.com/docs/en/setup">code.claude.com/docs/en/setup</a></div></li>
-      <li><div><span class="ref-title">استكشاف أخطاء PATH في Claude Code</span><a class="ref-url" href="https://code.claude.com/docs/en/troubleshoot-install#verify-your-path">code.claude.com/docs/en/troubleshoot-install#verify-your-path</a></div></li>
-      <li><div><span class="ref-title">مصادقة Claude Code</span><a class="ref-url" href="https://code.claude.com/docs/en/authentication">code.claude.com/docs/en/authentication</a></div></li>
-      <li><div><span class="ref-title">خطط Claude</span><a class="ref-url" href="https://claude.ai/upgrade">claude.ai/upgrade</a></div></li>
-      <li><div><span class="ref-title">متطلبات Antigravity IDE</span><a class="ref-url" href="https://antigravity.google/docs/ide/getting-started">antigravity.google/docs/ide/getting-started</a></div></li>
-      <li><div><span class="ref-title">تنزيل Antigravity IDE</span><a class="ref-url" href="https://antigravity.google/download">antigravity.google/download</a></div></li>
-      <li><div><span class="ref-title">تثبيت Homebrew</span><a class="ref-url" href="https://docs.brew.sh/Installation">docs.brew.sh/Installation</a></div></li>
-      <li><div><span class="ref-title">مستويات دعم Homebrew</span><a class="ref-url" href="https://docs.brew.sh/Support-Tiers">docs.brew.sh/Support-Tiers</a></div></li>
-      <li><div><span class="ref-title">Microsoft WinGet</span><a class="ref-url" href="https://learn.microsoft.com/windows/package-manager/winget/">learn.microsoft.com/windows/package-manager/winget</a></div></li>
-      <li><div><span class="ref-title">App Installer (WinGet)</span><a class="ref-url" href="https://apps.microsoft.com/detail/9nblggh4nns1">apps.microsoft.com/detail/9nblggh4nns1</a></div></li>
-      <li><div><span class="ref-title">Git لويندوز</span><a class="ref-url" href="https://git-scm.com/download/win">git-scm.com/download/win</a></div></li>
-      <li><div><span class="ref-title">Node.js</span><a class="ref-url" href="https://nodejs.org/">nodejs.org</a></div></li>
-      <li><div><span class="ref-title">Python لويندوز</span><a class="ref-url" href="https://www.python.org/downloads/windows/">python.org/downloads/windows</a></div></li>
-      <li><div><span class="ref-title">إصدارات GitHub غير القابلة للتغيير</span><a class="ref-url" href="https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases">docs.github.com/…/immutable-releases</a></div></li>
-    </ol>
-  </section>
-
-  <footer class="colophon">
-    <span>إعداد FOAD · الإصدار 2.1.3</span>
-    <span>ويندوز · ماك</span>
-  </footer>
-  </div><!-- /lang-ar -->
-
 </div>
 
+</div>
 <script>
 (function(){
-  /* ----- Platform tabs (one tablist per language) ----- */
-  document.querySelectorAll('.part-switch').forEach(function(list){
-    var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
-    function select(tab){
-      tabs.forEach(function(t){
-        var on = t === tab;
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-        var panel = document.getElementById(t.getAttribute('aria-controls'));
-        if(panel) panel.classList.toggle('active', on);
+  /* ----- Platform choice (one chooser per language, kept in sync) ----- */
+  var PLATFORMS = ['mac', 'win'];
+  var choosers = Array.prototype.slice.call(document.querySelectorAll('.choices'));
+
+  function selectPlatform(platform, scroll){
+    PLATFORMS.forEach(function(p){
+      var on = p === platform;
+      document.querySelectorAll('[id^="tab-' + p + '-"]').forEach(function(btn){
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
       });
+      document.querySelectorAll('[id^="panel-' + p + '-"]').forEach(function(panel){
+        panel.classList.toggle('active', on);
+      });
+    });
+    try { localStorage.setItem('platform', platform); } catch(e){}
+    if(scroll){
+      var visible = document.querySelector('.lang:not([hidden]) .platform-panel.active');
+      if(visible) visible.scrollIntoView({block:'start', behavior:'smooth'});
     }
-    tabs.forEach(function(t){
-      t.addEventListener('click', function(){ select(t); });
-      t.addEventListener('keydown', function(e){
+  }
+
+  choosers.forEach(function(list){
+    var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+    tabs.forEach(function(tab){
+      var platform = tab.id.indexOf('mac') !== -1 ? 'mac' : 'win';
+      tab.addEventListener('click', function(){ selectPlatform(platform, true); });
+      tab.addEventListener('keydown', function(e){
         if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
-          var other = tabs[(tabs.indexOf(t)+1)%tabs.length];
-          select(other); other.focus();
+          e.preventDefault();
+          var other = tabs[(tabs.indexOf(tab) + 1) % tabs.length];
+          other.focus();
+          selectPlatform(other.id.indexOf('mac') !== -1 ? 'mac' : 'win', false);
         }
       });
     });
   });
+
+  /* Guess the platform so the right guide is already open, but never lock it in. */
+  function guessPlatform(){
+    var d = navigator.userAgentData;
+    var hint = (d && d.platform) || navigator.platform || navigator.userAgent || '';
+    if(/mac|iphone|ipad|ipod/i.test(hint)) return 'mac';
+    if(/win/i.test(hint)) return 'win';
+    return null;
+  }
+
+  var stored = null;
+  try { stored = localStorage.getItem('platform'); } catch(e){}
+  var guessed = guessPlatform();
+  var initial = (PLATFORMS.indexOf(stored) !== -1) ? stored : guessed;
+
+  if(initial){
+    selectPlatform(initial, false);
+    if(!stored && guessed){
+      var msg = {
+        en: guessed === 'mac' ? 'Looks like you’re on a Mac — opened that one. Pick Windows if that’s wrong.'
+                              : 'Looks like you’re on Windows — opened that one. Pick Mac if that’s wrong.',
+        ar: guessed === 'mac' ? 'يبدو أنك تستخدم ماك — فُتح هذا الدليل. اختر ويندوز إن كان غير صحيح.'
+                              : 'يبدو أنك تستخدم ويندوز — فُتح هذا الدليل. اختر ماك إن كان غير صحيح.'
+      };
+      var en = document.getElementById('detected-en');
+      var ar = document.getElementById('detected-ar');
+      if(en) en.textContent = msg.en;
+      if(ar) ar.textContent = msg.ar;
+    }
+  }
 
   /* ----- Language switch (default: English) ----- */
   var btnEn = document.getElementById('btn-en');
