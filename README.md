@@ -119,7 +119,8 @@ Manual equivalents, if an intern needs to install a single piece by hand:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"   # Homebrew
 brew install git node python
 brew install --cask antigravity-ide
-curl -fsSL https://claude.ai/install.sh | bash                                                   # Claude Code
+curl -fsSL https://claude.ai/install.sh -o /tmp/claude-install.sh              # Claude Code
+/bin/bash /tmp/claude-install.sh
 ```
 
 ---

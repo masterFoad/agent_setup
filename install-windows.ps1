@@ -212,10 +212,28 @@ function Add-DirectoryToUserPath([string]$Directory) {
     return $true
 }
 
+function Get-CommandSourcePath($Command) {
+    if (-not $Command) { return $null }
+    if ($Command.Source) { return $Command.Source }
+    return $Command.Path
+}
+
 function Resolve-ExternalCommand([string]$Command) {
-    return Get-Command $Command -All -CommandType Application, ExternalScript -ErrorAction SilentlyContinue |
-        Sort-Object @{ Expression = { if ($_.CommandType -eq "Application") { 0 } else { 1 } } } |
-        Select-Object -First 1
+    # Get-Command -All already returns matches in real resolution order: PATH
+    # order across folders, PATHEXT order (.exe before .cmd) within a folder.
+    #
+    # Do NOT sort this list. Windows PowerShell 5.1's Sort-Object is not stable,
+    # so ranking equally (every match is an Application) reshuffled the results
+    # and a .cmd shim could be returned ahead of the real claude.exe. That wrong
+    # source is what Ensure-CommandOnPersistentPath then wrote to the user PATH.
+    # Filter in place instead, which keeps the original order.
+    $found = @(Get-Command $Command -All -CommandType Application, ExternalScript -ErrorAction SilentlyContinue)
+    if ($found.Count -eq 0) { return $null }
+
+    foreach ($candidate in $found) {
+        if ($candidate.CommandType -eq "Application") { return $candidate }
+    }
+    return $found[0]
 }
 
 function Ensure-CommandOnPersistentPath([string]$Command) {
@@ -223,7 +241,7 @@ function Ensure-CommandOnPersistentPath([string]$Command) {
     $cmd = Resolve-ExternalCommand $Command
     if (-not $cmd) { return $false }
 
-    $source = if ($cmd.Source) { $cmd.Source } else { $cmd.Path }
+    $source = Get-CommandSourcePath $cmd
     if ([string]::IsNullOrWhiteSpace($source)) { return $false }
     return (Add-DirectoryToUserPath -Directory (Split-Path -Parent $source))
 }
@@ -234,7 +252,7 @@ function Get-VerifiedSignedClaudePath {
         (Join-Path $HOME "AppData\Local\Microsoft\WinGet\Links\claude.exe")
     )
     $candidates += @(Get-Command "claude" -All -CommandType Application -ErrorAction SilentlyContinue |
-        ForEach-Object { if ($_.Source) { $_.Source } else { $_.Path } })
+        ForEach-Object { Get-CommandSourcePath $_ })
 
     foreach ($source in @($candidates | Select-Object -Unique)) {
         if (-not $source -or -not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }
@@ -580,7 +598,7 @@ function Check-CommandVersion(
         # kills the process and makes $LASTEXITCODE come back as -1 on success
         # (it prints the right version but falsely warns). Capture, record the
         # exit code immediately, then trim.
-        $output = & $cmd.Source $VersionArg 2>&1
+        $output = & (Get-CommandSourcePath $cmd) $VersionArg 2>&1
         $code = $LASTEXITCODE
         $result = ($output | Select-Object -First 1)
         if ($code -eq 0 -and $result -match '\d+\.\d+') {
