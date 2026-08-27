@@ -56,8 +56,13 @@ jobs:
             if (-not (Get-VerifiedSignedClaudePath)) { throw "Claude Authenticode verification failed." }
             if (-not (Check-CommandVersion "claude" -PersistentPathOnly)) { throw "Claude is missing from persistent PATH." }
             $freshCheck = '$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine"); $userPath = [Environment]::GetEnvironmentVariable("Path", "User"); $env:Path = "$machinePath;$userPath"; claude --version'
-            & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command $freshCheck
-            if ($LASTEXITCODE -ne 0) { throw "A fresh Windows PowerShell could not run Claude." }
+            $encodedCheck = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($freshCheck))
+            $freshOutput = & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -EncodedCommand $encodedCheck 2>&1
+            $freshExitCode = $LASTEXITCODE
+            $freshOutput | Write-Host
+            if ($freshExitCode -ne 0) {
+              throw "A fresh Windows PowerShell could not run Claude (exit $freshExitCode): $($freshOutput -join ' ')"
+            }
           } catch {
             Write-Host "::error title=Claude Windows integration::$($_.Exception.Message)"
             throw
